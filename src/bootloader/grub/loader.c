@@ -970,6 +970,13 @@ void ep_grub(multiboot_info_t *grub, uint32_t magic){
 
     }
 
+    for(int i = 0 ; i < z ; i++){
+      if(db[i].Type==7&&db[i].PhysicalStart){
+        db[i].PhysicalStart = table_index;
+        db[i].VirtualStart = table_index;
+      }
+    }
+
     memoryinfo.mMapDescSize = (uint64_t) sizeof(MemoryDescriptor);
     memoryinfo.mMapSize = (uint64_t) memoryinfo.mMapDescSize*z;
     memoryinfo.mMap = (uint64_t) ((uint32_t)&db);

@@ -246,7 +246,7 @@ void* FindTable(SDTHeader* sdtHeader, char* signature){
 EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 	InitializeLib(ImageHandle, SystemTable);
 
-	EFI_FILE* Kernel = LoadFile(NULL, L"sanderos\\kernel64.bin", ImageHandle, SystemTable);
+	EFI_FILE* Kernel = LoadFile(NULL, L"kernel64.sys", ImageHandle, SystemTable);
 	if (Kernel == NULL){
 		Print(L"Could not load kernel \n\r");for(;;);
 	}

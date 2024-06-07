@@ -28,3 +28,4 @@ void initialise_memory(MemoryInfo* mem);
 void *memset(void *str, int c, uint64_t n);
 void* malloc(uint64_t requested_size);
 void* calloc(uint64_t requested_size);
+void *memclear(void *str,uint64_t n);

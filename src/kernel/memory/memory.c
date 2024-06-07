@@ -12,7 +12,6 @@ void initialise_memory(MemoryInfo* mem){
       freememorypointer = desc->PhysicalStart;
     }
   }
-  memset(memoryblock,0,sizeof(MemoryBlockDescriptor)*MAX_SIZE_MEMORYTABLE);
 }
 
 void *memset(void *str, int c, uint64_t n){
@@ -20,6 +19,10 @@ void *memset(void *str, int c, uint64_t n){
     ((int*)str)[i] = c;
   }
   return str;
+}
+
+void *memclear(void *str,uint64_t n){
+  return memset(str,0,n);
 }
 
 void* malloc(uint64_t requested_size){
@@ -37,6 +40,6 @@ void* malloc(uint64_t requested_size){
 
 void* calloc(uint64_t requested_size){
   void* dat = malloc(requested_size);
-  memset(dat,0,requested_size);
+  memclear(dat,requested_size);
   return dat;
 }

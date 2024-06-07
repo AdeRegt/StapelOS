@@ -2,6 +2,7 @@
 #include "include/string.h"
 #include "include/interrupts.h"
 #include "include/memory.h"
+#include "include/paging.h"
 
 /**
  * @brief Bootinfo structure given by the program that booted us
@@ -36,8 +37,9 @@ typedef struct{
 
 void kernel_main(BootInfo* bi){
   initialise_graphics_driver(bi->graphics_info);
-  initialise_memory (bi->memory_info);
   initialise_interrupts();
+  initialise_memory (bi->memory_info);
+  initialise_paging();
   printk("StapelOS64 bit\n");
   for(;;);
 }
