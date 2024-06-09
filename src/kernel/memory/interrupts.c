@@ -26,6 +26,13 @@ void interrupt_set_offset(IDTDescEntry* int_PageFault,uint64_t offset){
   int_PageFault->offset2 = (uint32_t)((offset & 0xffffffff00000000) >> 32);
 }
 
+void setInterrupt(int offset,void *fun){
+  IDTDescEntry* int_PageFault = (IDTDescEntry*)(idtr.Offset + ((offset+PIC_OFFSET) * sizeof(IDTDescEntry)));
+  interrupt_set_offset(int_PageFault,(uint64_t)fun);
+  int_PageFault->type_attr = IDT_TA_InterruptGate;
+  int_PageFault->selector = GDT_CODE_SEGMENT;
+}
+
 void setRawInterrupt(int offset,void *fun){
   IDTDescEntry* int_PageFault = (IDTDescEntry*)(idtr.Offset + ((offset) * sizeof(IDTDescEntry)));
   interrupt_set_offset(int_PageFault,(uint64_t)fun);

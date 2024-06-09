@@ -57,3 +57,4 @@ struct stackframe {
 };
 
 void initialise_interrupts();
+void setInterrupt(int offset,void *fun);
