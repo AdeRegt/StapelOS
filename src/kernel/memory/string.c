@@ -2,14 +2,14 @@
 #include "../include/vga.h"
 #include "../include/string.h"
 
-char *convert(unsigned int num, int base) {
+char *convert(uint64_t num, int base) {
 	static char Representation[]= "0123456789ABCDEF";
 	static char buffer[50];
 	char *ptr;
 
-    for(int i = 0 ; i < 50 ; i++){
-        buffer[i] = 0x00;
-    }
+  for(int i = 0 ; i < 50 ; i++){
+    buffer[i] = 0x00;
+  }
 
 	if(num==0){
 		ptr = &buffer[0];
@@ -83,6 +83,24 @@ void printk(char* format,...){
                 int t = va_arg(arg,unsigned int);
                 char *convertednumber = convert(t,8);
                 print_raw_string(convertednumber);
+            }else if(deze=='l'){
+                length++;
+                deze = format[length];
+                if(deze=='x'){
+                    uint64_t t = va_arg(arg,uint64_t);
+                    putc('0');
+                    putc('x');
+                    char *convertednumber = convert(t,16);
+                    print_raw_string(convertednumber);
+                }else if(deze=='d'){
+                    uint64_t t = va_arg(arg,uint64_t);
+                    char *convertednumber = convert(t,10);
+                    print_raw_string(convertednumber);
+                }else if(deze=='o'){
+                    uint64_t t = va_arg(arg,uint64_t);
+                    char *convertednumber = convert(t,8);
+                    print_raw_string(convertednumber);
+                }
             }
             length++;
         }else{

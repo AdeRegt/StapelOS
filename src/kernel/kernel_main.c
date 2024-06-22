@@ -4,6 +4,7 @@
 #include "include/memory.h"
 #include "include/paging.h"
 #include "include/pci.h"
+#include "include/timer.h"
 
 /**
  * @brief Bootinfo structure given by the program that booted us
@@ -41,6 +42,7 @@ void kernel_main(BootInfo* bi){
   initialise_interrupts();
   initialise_memory (bi->memory_info);
   initialise_paging();
+  initialise_timer();
   initialise_pci();
   printk("StapelOS64 bit\n");
   for(;;);
