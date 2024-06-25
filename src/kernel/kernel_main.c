@@ -39,11 +39,13 @@ typedef struct{
 
 void kernel_main(BootInfo* bi){
   initialise_graphics_driver(bi->graphics_info);
+  printk("StapelOS64 bit\n");
+  printk("Loading essentials...\n");
   initialise_interrupts();
   initialise_memory (bi->memory_info);
   initialise_paging();
   initialise_timer();
   initialise_pci();
-  printk("StapelOS64 bit\n");
+  printk("Ready.\n");
   for(;;);
 }

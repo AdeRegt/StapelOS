@@ -87,9 +87,12 @@
 #define HCCPARAMS1_MaxPSASize ( ( HCCPARAMS1 & 0b00000000000000001111000000000000 ) >> 12 )
 #define HCCPARAMS1_xECP       ( ( HCCPARAMS1 & 0b11111111111111110000000000000000 ) >> 16 )
 
-#define USBCMD_RS             ( ( USBCMD & 0b00000000000000000000000000000001 ) >> 0 )
+#define USBCMD_MASK_RS        0b00000000000000000000000000000001
+#define USBCMD_SHIFT_RS        0b00000000000000000000000000000000
+#define USBCMD_RS             ( ( USBCMD & USBCMD_MASK_RS ) >> USBCMD_SHIFT_RS )
 #define USBCMD_MASK_HCRST     0b00000000000000000000000000000010
-#define USBCMD_HCRST          ( ( USBCMD & USBCMD_MASK_HCRST ) >> 1 )
+#define USBCMD_SHIFT_HCRST     1
+#define USBCMD_HCRST          ( ( USBCMD & USBCMD_MASK_HCRST ) >> USBCMD_SHIFT_HCRST )
 #define USBCMD_INTE           ( ( USBCMD & 0b00000000000000000000000000000100 ) >> 2 )
 #define USBCMD_HSEE           ( ( USBCMD & 0b00000000000000000000000000001000 ) >> 3 )
 #define USBCMD_LHCRST         ( ( USBCMD & 0b00000000000000000000000010000000 ) >> 7 )
@@ -396,7 +399,14 @@ typedef struct{
   void* ring;
   int pointer;
   int stat;
+  int doorbelid;
 }__attribute__((packed)) USBRing;
+
+typedef struct{
+  USBRing *control;
+  USBRing *out;
+  USBRing *in;
+}__attribute__((packed)) USBSocket;
 
 typedef struct __attribute__ ((packed)){
     unsigned char  bLength;
@@ -423,13 +433,13 @@ typedef struct __attribute__ ((packed)) {
     uint8_t  iInterface;
 }usb_interface_descriptor;
 
-typedef struct {
+typedef struct __attribute__ ((packed)) {
 	unsigned char bLength;
 	unsigned char bDescriptorType;
 	unsigned char bEndpointAddress;
 	unsigned char bmAttributes;
 	unsigned short wMaxPacketSize;
-	unsigned char bInterval;
+  unsigned char udef;
 }EHCI_DEVICE_ENDPOINT;
 
 typedef struct __attribute__ ((packed)) {
