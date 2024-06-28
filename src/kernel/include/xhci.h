@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "usb.h"
 
 #define CAPLENGTH ((uint8_t*)base_xhci_address)[0]
 #define HCIVERSION ((uint16_t*)( base_xhci_address + 0x02 ))[0]
@@ -157,14 +158,6 @@
 #define XHCI_PORT_LINK_COMPLIANCE_MODE_STATE 10
 #define XHCI_PORT_LINK_TEST_STATE 11
 #define XHCI_PORT_LINK_RESUME_STATE 15
-
-typedef struct  {
-    uint8_t bRequestType;
-    uint8_t bRequest;
-    uint16_t wValue;
-    uint16_t wIndex;
-    uint16_t wLength;
-} USBCommand;
 
 typedef struct{
     uint32_t ring_segment_base_address_low;
@@ -400,63 +393,20 @@ typedef struct{
   int pointer;
   int stat;
   int doorbelid;
+  int deviceaddr;
 }__attribute__((packed)) USBRing;
 
 typedef struct{
   USBRing *control;
   USBRing *out;
   USBRing *in;
+  XHCIInputContextBuffer* dataset;
+  void *descriptors;
 }__attribute__((packed)) USBSocket;
 
-typedef struct __attribute__ ((packed)){
-    unsigned char  bLength;
-    unsigned char  bDescriptorType;
-
-    unsigned short wTotalLength;
-    unsigned char  bNumInterfaces;
-    unsigned char  bConfigurationValue;
-    unsigned char  iConfiguration;
-    unsigned char  bmAttributes;
-    unsigned char  bMaxPower;
-}usb_config_descriptor ;
-
-typedef struct __attribute__ ((packed)) {
-    uint8_t  bLength;
-    uint8_t  bDescriptorType;
-
-    uint8_t  bInterfaceNumber;
-    uint8_t  bAlternateSetting;
-    uint8_t  bNumEndpoints;
-    uint8_t  bInterfaceClass;
-    uint8_t  bInterfaceSubClass;
-    uint8_t  bInterfaceProtocol;
-    uint8_t  iInterface;
-}usb_interface_descriptor;
-
-typedef struct __attribute__ ((packed)) {
-	unsigned char bLength;
-	unsigned char bDescriptorType;
-	unsigned char bEndpointAddress;
-	unsigned char bmAttributes;
-	unsigned short wMaxPacketSize;
-  unsigned char udef;
-}EHCI_DEVICE_ENDPOINT;
-
-typedef struct __attribute__ ((packed)) {
-  uint8_t bLength;
-  uint8_t bDescriptorType;
-  uint16_t bcdUSB;
-  uint8_t bDeviceClass;
-  uint8_t bDeviceSubClass;
-  uint8_t bDeviceProtocol;
-  uint8_t bMaxPacketSize0;
-  uint16_t idVendor;
-  uint16_t idProduct;
-  uint16_t bcdDevice;
-  uint8_t iManufacturer;
-  uint8_t iProduct;
-  uint8_t iSerialNumber;
-  uint8_t bNumConfigurations;
-}USBStandardDeviceDescriptor;
-
+uint8_t xhci_send_bulk(USBRing *device,void *data,int size);
+uint8_t xhci_recieve_bulk(USBRing *device,void *data,int size);
+usb_endpoint* xhci_get_endpoint(USBSocket* info,int type);
+void xhci_register_bulk_endpoints(USBSocket* info,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2);
+uint8_t xhci_request_set_config(USBRing *device,uint8_t configid);
 void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func);
