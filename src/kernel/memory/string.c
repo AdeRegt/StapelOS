@@ -2,7 +2,37 @@
 #include "../include/vga.h"
 #include "../include/string.h"
 
-char *convert(uint64_t num, int base) {
+char *convertl(uint64_t num, int base) {
+	static char Representation[]= "0123456789ABCDEF";
+	static char buffer[50];
+	char *ptr;
+
+  for(int i = 0 ; i < 50 ; i++){
+    buffer[i] = 0x00;
+  }
+
+	if(num==0){
+		ptr = &buffer[0];
+		buffer[0] = '0';
+		buffer[1] = 0;
+		return ptr;
+	}
+
+	ptr = &buffer[49];
+	*--ptr = '\0';
+	*--ptr = '\0';
+	*--ptr = '\0';
+
+	do
+	{
+		*--ptr = Representation[num%base];
+		num /= base;
+	}while(num != 0);
+
+	return(ptr);
+}
+
+char *convert(uint32_t num, int base) {
 	static char Representation[]= "0123456789ABCDEF";
 	static char buffer[50];
 	char *ptr;
@@ -90,15 +120,15 @@ void printk(char* format,...){
                     uint64_t t = va_arg(arg,uint64_t);
                     putc('0');
                     putc('x');
-                    char *convertednumber = convert(t,16);
+                    char *convertednumber = convertl(t,16);
                     print_raw_string(convertednumber);
                 }else if(deze=='d'){
                     uint64_t t = va_arg(arg,uint64_t);
-                    char *convertednumber = convert(t,10);
+                    char *convertednumber = convertl(t,10);
                     print_raw_string(convertednumber);
                 }else if(deze=='o'){
                     uint64_t t = va_arg(arg,uint64_t);
-                    char *convertednumber = convert(t,8);
+                    char *convertednumber = convertl(t,8);
                     print_raw_string(convertednumber);
                 }
             }

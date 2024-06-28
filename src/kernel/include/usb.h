@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 
+#define USB_IF_WIRELESS 0xE0
 #define USB_IF_MSD 0x08
 #define USB_IF_HID 0x03
 

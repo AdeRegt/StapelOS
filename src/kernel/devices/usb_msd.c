@@ -3,15 +3,6 @@
 #include "../include/usb_msd.h"
 #include "../include/memory.h"
 
-typedef struct {
-    uint32_t signature;
-    uint32_t tag;
-    uint32_t transferlength;
-    uint8_t flags;
-    uint8_t lun;
-    uint8_t command_len;
-    uint8_t data[16];
-} __attribute__ ((packed)) CommandBlockWrapper;
 uint32_t usbtagpointer = 1;
 
 CommandBlockWrapper* usb_stick_generate_pointer()
@@ -42,15 +33,16 @@ void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter)
     ep->data[6] = 0;
     ep->data[7] = (uint8_t) ((counter >> 8) & 0xFF);
     ep->data[8] = (uint8_t) ((counter) & 0xFF);
-printk("-----\n");
+		printk("send:\n");
     usb_send_bulk (data, ep, sizeof(CommandBlockWrapper));
 
 		void *databufer = calloc(0x1000);
-printk("-----\n");
-		usb_recieve_bulk(data,databufer,512+sizeof(CommandBlockWrapper));
+		printk("receive data:\n");
+		usb_recieve_bulk(data,databufer,sizeof(CommandStatusWrapper) + (512*counter));
 
-		uint8_t* cv = (uint8_t*) databufer;
-		for(int i = 0 ; i < sizeof(CommandBlockWrapper) ; i++){printk("%x ",cv[i]);}
+		CommandStatusWrapper *csw = (CommandStatusWrapper*) (databufer + (512*counter));
+		printk("status: %x residue: %x tag: %x signature: %x \n",csw->status,csw->data_residue,csw->tag,csw->signature);
+		return databufer;
 }
 
 void install_usb_msd(usb_interface_descriptor* desc,void *data){
@@ -89,5 +81,5 @@ void install_usb_msd(usb_interface_descriptor* desc,void *data){
 
 	usb_request_set_config(data,1);
 
-	usb_stick_one_read (data , 1,1);
+
 }

@@ -281,6 +281,23 @@ typedef struct{
 }__attribute__((packed))StatusStageTRB;
 
 typedef struct{
+    uint32_t Address1;
+    uint32_t Address2;
+    uint32_t Reserved3:17;
+    uint16_t Reserved4:5;
+    uint16_t InterrupterTarget:10;
+    uint16_t Cyclebit:1;
+    uint16_t EvaluateNextTRB:1;
+    uint16_t Reserved5:2;
+    uint16_t Chainbit:1;
+    uint16_t InterruptOnCompletion:1;
+    uint16_t Reserved6:3;
+    uint16_t BlockEventInterrupt:1;
+    uint16_t TRBType:6;
+    uint16_t RsvdZ2:16;
+}__attribute__((packed))EventDataTRB;
+
+typedef struct{
      uint32_t rsvrd1;
      uint32_t rsvrd2;
      uint32_t rsvrd3;

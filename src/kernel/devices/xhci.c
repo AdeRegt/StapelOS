@@ -679,13 +679,12 @@ uint8_t xhci_recieve_bulk(USBRing *device,void *data,int size)
     trb1->EvaluateNextTRB = 0;
     trb1->ImmediateData = 0;
     trb1->InterrupterTarget = 0;
-    // trb1->NoSnoop = 1;
     trb1->TDSize = 0;
     trb1->TRBTransferLength = size;
     trb1->TRBType = 1;
     trb1->InterruptOnCompletion = 1;
 
-    StatusStageTRB *trb3 = (StatusStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer];
+    EventDataTRB *trb3 = (EventDataTRB*) & ((DefaultTRB*)device->ring)[device->pointer];
     trb3->Cyclebit = 0;
 
     volatile CommandCompletionEventTRB *res = xhci_ring_and_wait(device->deviceaddr,device->doorbelid,(uint32_t)(uint64_t)trb1);
@@ -719,14 +718,12 @@ uint8_t xhci_send_bulk(USBRing *device,void *data,int size)
     trb1->TDSize = 0;
     trb1->TRBTransferLength = size;
     trb1->TRBType = 1;
+    trb1->InterruptOnCompletion = 1;
 
-    StatusStageTRB *trb3 = (StatusStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
-    trb3->Cyclebit = 1;
-    trb3->InterruptOnCompletion = 1;
-    trb3->Direction = 0;
-    trb3->TRBType = 4;
+    EventDataTRB *trb3 = (EventDataTRB*) & ((DefaultTRB*)device->ring)[device->pointer];
+    trb3->Cyclebit = 0;
 
-    volatile CommandCompletionEventTRB *res = xhci_ring_and_wait(device->deviceaddr,device->doorbelid,(uint32_t)(uint64_t)trb3);
+    volatile CommandCompletionEventTRB *res = xhci_ring_and_wait(device->deviceaddr,device->doorbelid,(uint32_t)(uint64_t)trb1);
     if(res)
     {
         if(res->CompletionCode!=1)
@@ -823,9 +820,7 @@ void xhci_initialise_port(int portno)
 	}
 	else if(portspeed==XHCI_SPEED_FULL)
 	{
-			// we cannot support fulspeed
-			calculatedportspeed = 8;
-			return;
+			calculatedportspeed = 64;
 	}
 	else
 	{
@@ -878,6 +873,10 @@ void xhci_initialise_port(int portno)
 	xhci_request_ring_test(ringinfo,deviceid);
 
 	USBStandardDeviceDescriptor* devdesc = (USBStandardDeviceDescriptor*) xhci_request_device_descriptor(ringinfo,deviceid);
+	if(portspeed==XHCI_SPEED_FULL&&devdesc->bMaxPacketSize0!=64){
+			printk("We have a fullspeed here! different maxpackagesize: %d \n",devdesc->bMaxPacketSize0);
+			return;
+	}
 
 	uint8_t* cinforaw = (uint8_t*)xhci_request_device_configuration(ringinfo,deviceid);
 	usb_interface_descriptor* desc = (usb_interface_descriptor*)(((unsigned long)cinforaw)+sizeof(usb_config_descriptor));

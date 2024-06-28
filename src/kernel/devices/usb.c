@@ -1,6 +1,7 @@
 #include "../include/string.h"
 #include "../include/usb.h"
 #include "../include/usb_msd.h"
+#include "../include/usb_hid.h"
 #include "../include/xhci.h"
 
 void usb_dump_descriptor(usb_interface_descriptor* desc){
@@ -26,7 +27,26 @@ void usb_dump_descriptor(usb_interface_descriptor* desc){
 	case 0x14: printk("MCTP over USB Protocol Endpoint Device Class");break;
 	case 0x3C: printk("I3C Device Class");break;
 	case 0xDC: printk("Diagnostic Device");break;
-	case 0xE0: printk("Wireless Controller");break;
+	case USB_IF_WIRELESS:
+		printk("Wireless Controller :: ");
+		switch(desc->bInterfaceSubClass){
+		case 1:
+			switch(desc->bInterfaceProtocol){
+			case 1: printk("Bluetooth Programming Interface");break;
+			case 2: printk("UWB Radio Control Interface");break;
+			case 3: printk("Remote NDIS");break;
+			case 4: printk("Bluetooth AMP Controller");break;
+			}
+			break;
+		case 2:
+			switch(desc->bInterfaceProtocol){
+			case 1: printk("Host Wire Adapter Control/Data interface");break;
+			case 2: printk("Device Wire Adapter Control/Data interface");break;
+			case 3: printk("Device Wire Adapter Isochronous interface");break;
+			}
+			break;
+		}
+		break;
 	case 0xEF: printk("Miscellaneous");break;
 	case 0xFE: printk("Application Specific");break;
 	case 0xFF: printk("Vendor specific");break;
@@ -57,6 +77,8 @@ uint8_t usb_request_set_config(void *device,uint8_t configid){
 void install_new_usb_device(usb_interface_descriptor* desc,void *info){
 	if(desc->bInterfaceClass==USB_IF_MSD){
 		install_usb_msd(desc,info);
+	}else if(desc->bInterfaceClass==USB_IF_HID){
+		install_usb_hid(desc,info);
 	}else{
 		usb_dump_descriptor(desc);
 	}
