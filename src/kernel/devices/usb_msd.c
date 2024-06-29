@@ -41,7 +41,7 @@ void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter)
 		usb_recieve_bulk(data,databufer,sizeof(CommandStatusWrapper) + (512*counter));
 
 		CommandStatusWrapper *csw = (CommandStatusWrapper*) (databufer + (512*counter));
-		printk("status: %x residue: %x tag: %x signature: %x \n",csw->status,csw->data_residue,csw->tag,csw->signature);
+		// printk("status: %x residue: %x tag: %x signature: %x \n",csw->status,csw->data_residue,csw->tag,csw->signature);
 		return databufer;
 }
 
