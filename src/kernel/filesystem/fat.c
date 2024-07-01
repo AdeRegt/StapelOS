@@ -56,13 +56,105 @@ void fat_dump_boot_block(FATBootBlock* ee){
 	}
 }
 
-FATFileTemplate *filesystembuffer;
+FATFileTemplate *filesystembuffer = 0;
+FATInformation* information;
+
+uint8_t fat_filesystem_is_enabled(){
+	return filesystembuffer!=0;
+}
+
+uint32_t fat_read(int filepointer,void* where){
+	if(filepointer){
+		FATFileDefinition defo = filesystembuffer->fs[filepointer-1];
+		FAT32BootBlock* bb = (FAT32BootBlock*) &information->bootblock->extended_section;
+		uint32_t lol = ( information->base + (information->root_directory_index + ( defo.cluster_low * information->bootblock->sectors_per_cluster )) ) - ( bb->cluster_num_root * information->bootblock->sectors_per_cluster );
+		char* tt = (char*) read_sectors (lol , 1, where);
+		return defo.size;
+	}else{
+		return 0;
+	}
+}
+
+int fat_compare_filenames(char* filename,char* original){
+	int original_a = 0;
+	int filename_a = 0;
+	char buffer[13];
+	for(int i = 0 ; i < 13 ; i++){
+		buffer[i]=0;
+	}
+	int bufferi = 0;
+	for(int i = 0 ; i < 8 ; i++){
+		if(filename[i]==' '){
+			continue;
+		}
+		buffer[bufferi++] = filename[i];
+	}
+	buffer[bufferi++] = '.';
+	for(int i = 0 ; i < 3 ; i++){
+		if(filename[8+i]==' '){
+			continue;
+		}
+		buffer[bufferi++] = filename[8+i];
+	}
+	for(int i = 0 ; i < 12 ; i++){
+		if(original[i]==0){
+			break;
+		}
+		if(buffer[i]!=original[i]){
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int fat_open(char* filename){
+	for(int i = 0 ; i < (16*2) ; i++){
+		if(filesystembuffer->fs[i].attributes==0x20){
+			if(fat_compare_filenames ((char*) &filesystembuffer->fs[i].filename, filename)==1){
+				return i+1;
+			}
+		}
+	}
+	return 0;
+}
+
+char* fat_dir(){
+	char* buffer = (char*) calloc(0x1000);
+	int bufferi = 0;
+	int bufferz = 0;
+	for(int i = 0 ; i < (16*2) ; i++){
+		if(filesystembuffer->fs[i].attributes==0x20){
+			if(bufferi!=0){
+				buffer[bufferi++] = ';';
+			}
+			for(int z = 0 ; z < 8 ; z++){
+				if(filesystembuffer->fs[i].filename[z]!=' '){
+					buffer[bufferi++] = filesystembuffer->fs[i].filename[z];
+				}
+			}
+			buffer[bufferi++] = '.';
+			for(int z = 0 ; z < 3 ; z++){
+				if(filesystembuffer->fs[i].filename[z]!=' '){
+					buffer[bufferi++] = filesystembuffer->fs[i].filename[8+z];
+				}
+			}
+		}
+	}
+	return buffer;
+}
 
 void fat_initialise_fat(Partition part){
-	FATBootBlock *bpb = (FATBootBlock*) read_sectors (part.lba_start , 1);
+	FATBootBlock *bpb = (FATBootBlock*) calloc(0x1000);
+	read_sectors (part.lba_start , 1, bpb);
 	FAT32BootBlock* bb = (FAT32BootBlock*) &bpb->extended_section;
 	uint32_t root_directory_index = bpb->reserved_sector_count + ( bpb->table_count * bb->sectors_per_fat );
-	filesystembuffer = (FATFileTemplate*) read_sectors (part.lba_start + root_directory_index , 5);
+	filesystembuffer = (FATFileTemplate*) calloc(0x1000);
+	read_sectors (part.lba_start + root_directory_index , 5, filesystembuffer);
+	information = (FATInformation*) calloc(0x1000);
+	information->bootblock = bpb;
+	information->template = filesystembuffer;
+	information->root_directory_index = root_directory_index;
+	information->base = part.lba_start;
 }
 
 void fat_handle_partition(Partition part){
@@ -72,10 +164,10 @@ void fat_handle_partition(Partition part){
 }
 
 void detect_fat(){
-	MBRTemplate* template = read_sectors (0 , 1);
+	MBRTemplate* template = calloc(0x1000);
+	read_sectors (0 , 1, template);
 	fat_handle_partition (template->partition1);
 	fat_handle_partition (template->partition2);
 	fat_handle_partition (template->partition3);
 	fat_handle_partition (template->partition4);
-
 }

@@ -351,14 +351,14 @@ DefaultTRB *xhci_request_free_command_trb(uint8_t inc)
 volatile CommandCompletionEventTRB *xhci_ring_and_wait(uint32_t doorbell_offset,uint32_t doorbell_value,uint32_t checkvalue)
 {
 		DOORBELL[doorbell_offset] = doorbell_value;
-		sleep(10);
+		sleep(5);
 		while((IMAN(0)&1)==0)
 		{
-				sleep(10);
+				sleep(5);
 		}
 		int timeout = 5;
 		again:
-		sleep(10);
+		sleep(5);
 		for(int i = 0 ; i < XHCI_EVENT_RING_SIZE ; i++)
 		{
 				volatile CommandCompletionEventTRB *to = (volatile CommandCompletionEventTRB*)&((volatile CommandCompletionEventTRB*)(eventring+(i*sizeof(CommandCompletionEventTRB))))[0];
@@ -796,7 +796,7 @@ void xhci_initialise_port(int portno)
 	if(PORTSC_PED (portno)==0)
 	{
 		PORTSC(portno) = PORTSC (portno) | 0x10;
-		sleep(10);
+		sleep(7);
 	}
 	// and now?
 	if(PORTSC_PED (portno)==0)
@@ -985,7 +985,7 @@ void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 
 	USBCMD = USBCMD | USBCMD_MASK_RS;
 
-	sleep(10);
+	sleep(5);
 
 	for(int i = 0 ; i < HCSPARAMS1_MaxPorts ;i++)
 	{

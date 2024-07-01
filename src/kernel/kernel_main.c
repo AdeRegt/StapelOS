@@ -5,6 +5,8 @@
 #include "include/paging.h"
 #include "include/pci.h"
 #include "include/timer.h"
+#include "include/fat.h"
+#include "include/stapelbridge.h"
 
 /**
  * @brief Bootinfo structure given by the program that booted us
@@ -47,5 +49,9 @@ void kernel_main(BootInfo* bi){
   initialise_timer();
   initialise_pci();
   printk("Ready.\n");
+	if(fat_filesystem_is_enabled()){
+		printk("Filesystem is enabled!\n");
+	}
+	// load_stapel_tutorial();
   for(;;);
 }

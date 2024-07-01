@@ -15,7 +15,7 @@ CommandBlockWrapper* usb_stick_generate_pointer()
     return ep;
 }
 
-void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter)
+void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter,void* out)
 {
     CommandBlockWrapper *ep = usb_stick_generate_pointer();
     ep->transferlength = 512 * counter;
@@ -37,18 +37,17 @@ void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter)
 
     usb_send_bulk (data, ep, sizeof(CommandBlockWrapper));
 
-		void *databufer = calloc(0x1000);
-		usb_recieve_bulk(data,databufer,sizeof(CommandStatusWrapper) + (512*counter));
+		usb_recieve_bulk(data,out,sizeof(CommandStatusWrapper) + (512*counter));
 
-		CommandStatusWrapper *csw = (CommandStatusWrapper*) (databufer + (512*counter));
+		CommandStatusWrapper *csw = (CommandStatusWrapper*) (out + (512*counter));
 		// printk("status: %x residue: %x tag: %x signature: %x \n",csw->status,csw->data_residue,csw->tag,csw->signature);
-		return databufer;
+		return out;
 }
 
 void *rsb;
 
-void *read_sectors(uint64_t sector, uint32_t counter){
-	return usb_stick_one_read (rsb,sector,counter);
+void *read_sectors(uint64_t sector, uint32_t counter,void* out){
+	return usb_stick_one_read (rsb,sector,counter,out);
 }
 
 void install_usb_msd(usb_interface_descriptor* desc,void *data){

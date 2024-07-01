@@ -68,4 +68,12 @@ typedef struct{
   FATFileDefinition fs[16];
 }__attribute__((packed)) FATFileTemplate;
 
+typedef struct{
+  FATFileTemplate* template;
+  FATBootBlock* bootblock;
+  uint32_t root_directory_index;
+  uint32_t base;
+}__attribute__((packed)) FATInformation;
+
 void detect_fat();
+uint8_t fat_filesystem_is_enabled();
