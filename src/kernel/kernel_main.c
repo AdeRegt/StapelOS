@@ -51,7 +51,7 @@ void kernel_main(BootInfo* bi){
   printk("Ready.\n");
 	if(fat_filesystem_is_enabled()){
 		printk("Filesystem is enabled!\n");
+		load_stapel_tutorial();
 	}
-	// load_stapel_tutorial();
   for(;;);
 }

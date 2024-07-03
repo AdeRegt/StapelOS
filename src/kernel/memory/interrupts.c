@@ -97,3 +97,4 @@ void initialise_interrupts(){
     asm volatile ("lidt %0" : : "m"(idtr));
     asm volatile ("sti");
 }
+

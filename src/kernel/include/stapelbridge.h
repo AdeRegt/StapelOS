@@ -12,3 +12,4 @@ typedef struct {
 StapelMultitaskingInstance* insert_stapel_cardridge(void* memoryregion);
 int handle_next_instruction(StapelMultitaskingInstance* cv);
 void load_stapel_tutorial();
+void load_stapel_file_singletasking(char* path);

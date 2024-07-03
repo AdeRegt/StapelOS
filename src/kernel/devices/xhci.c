@@ -820,7 +820,7 @@ void xhci_initialise_port(int portno)
 	}
 	else if(portspeed==XHCI_SPEED_FULL)
 	{
-			calculatedportspeed = 64;
+			calculatedportspeed = 64;return;
 	}
 	else
 	{
@@ -995,4 +995,5 @@ void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 		}
 	}
 }
+
 

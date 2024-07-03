@@ -164,3 +164,11 @@ uint32_t get_cpu_feature_information(){
   asm volatile("cpuid":"=d"(*&infoslot):"a"(code):"ecx","ebx");
   return infoslot;
 }
+
+void __stack_chk_fail(){
+    for(;;);
+}
+
+void __stack_chk_fail_local(){
+    for(;;);
+}
