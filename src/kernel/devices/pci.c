@@ -1,8 +1,33 @@
 #include "../include/string.h"
 #include "../include/pci.h"
 #include "../include/cpu.h"
-#include "../include/xhci.h"
+#include "../include/usb_xhci.h"
+#include "../include/usb_ehci.h"
 #include "../include/interrupts.h"
+
+void pciConfigWriteWord (uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint16_t value) {
+    unsigned long address;
+ 
+    /* create configuration address as per Figure 1 */
+    address = (unsigned long)((bus << 16) | (slot << 11) |
+              (func << 8) | (offset & 0xfc) | ((unsigned long)0x80000000));
+ 
+    /* write out the address */
+    outportw(PCI_ADDRESS, address);
+    outportw(PCI_DATA,value);
+}
+
+void pciConfigWriteDWord(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint32_t value){
+	unsigned long address;
+ 
+    /* create configuration address as per Figure 1 */
+    address = (unsigned long)((bus << 16) | (slot << 11) |
+              (func << 8) | (offset & 0xfc) | ((unsigned long)0x80000000));
+ 
+    /* write out the address */
+    outportl(PCI_ADDRESS, address);
+    outportl(PCI_DATA,value);
+}
 
 uint16_t pciConfigReadWord (uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset) {
     uint32_t address;
@@ -55,9 +80,9 @@ void check_pci_entry(uint8_t bus,uint8_t slot,uint8_t function){
   }
   uint8_t interface = pciConfigReadByteHi(bus,slot,function,PCI_FIELDS_INTERFACE);
   if(interface==0x00||interface==0x10){
-    printk("USB1.0 found\n");
+    // printk("USB1.0 found\n");
   }else if(interface==0x20){
-    printk("USB2.0 found\n");
+    initialise_ehci (bus, slot, function);
   }else if(interface==0x30){
     initialise_xhci (bus, slot, function);
   }else{

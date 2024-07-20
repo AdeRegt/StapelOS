@@ -77,7 +77,7 @@ void install_usb_msd(usb_interface_descriptor* desc,void *data){
 	}
 
 	usb_endpoint *ep1 = getUSBEndpoint(data,0);
-  usb_endpoint *ep2 = getUSBEndpoint(data,1);
+  	usb_endpoint *ep2 = getUSBEndpoint(data,1);
 
 	void *localoutring = calloc(0x1000);
 	void *localinring = calloc(0x1000);

@@ -1,4 +1,4 @@
-#include "../include/xhci.h"
+#include "../include/usb_xhci.h"
 #include "../include/string.h"
 #include "../include/memory.h"
 #include "../include/pci.h"
@@ -249,64 +249,7 @@ void xhci_dump_usbport(int n){
 	printk("- Warm Port Reset (WPR)              : %x \n",PORTSC_WPR(n));
 }
 
-void xhci_dump_device_descriptor(USBStandardDeviceDescriptor* desc){
-	printk("USB Standard Device Descriptor\n");
-	printk("- bLength            : %x \n",desc->bLength);
-	printk("- bDescriptorType    : %x \n",desc->bDescriptorType);
-	printk("- bcdUSB             : %x \n",desc->bcdUSB);
-	printk("- bDeviceClass       : %x \n",desc->bDeviceClass);
-	printk("- bDeviceSubClass    : %x \n",desc->bDeviceSubClass);
-	printk("- bDeviceProtocol    : %x \n",desc->bDeviceProtocol);
-	printk("- bMaxPacketSize0    : %x \n",desc->bMaxPacketSize0);
-	printk("- idVendor           : %x \n",desc->idVendor);
-	printk("- idProduct          : %x \n",desc->idProduct);
-	printk("- bcdDevice          : %x \n",desc->bcdDevice);
-	printk("- iManufacturer      : %x \n",desc->iManufacturer);
-	printk("- iProduct           : %x \n",desc->iProduct);
-	printk("- iSerialNumber      : %x \n",desc->iSerialNumber);
-	printk("- bNumConfigurations : %x \n",desc->bNumConfigurations);
-}
 
-void xhci_dump_device_type_from_interface(usb_interface_descriptor* desc){
-	printk("interface descriptor\n");
-	printk("- %s : %x \n","bLength",desc->bLength);
-	printk("- %s : %x \n","bDescriptorType",desc->bDescriptorType);
-	printk("- %s : %x \n","bInterfaceNumber",desc->bInterfaceNumber);
-	printk("- %s : %x \n","bAlternateSetting",desc->bAlternateSetting);
-	printk("- %s : %x \n","bNumEndpoints",desc->bNumEndpoints);
-	printk("- %s : %x \n","bInterfaceClass",desc->bInterfaceClass);
-	printk("- %s : %x \n","bInterfaceSubClass",desc->bInterfaceSubClass);
-	printk("- %s : %x \n","bInterfaceProtocol",desc->bInterfaceProtocol);
-	printk("- %s : %x \n","iInterface",desc->iInterface);
-}
-
-void xhci_dump_device_endpoint(usb_endpoint *dev){
-	char* usage_type = "unknown";
-	char* synchronisation_type = "unknown";
-	char* transfer_type = "unknown";
-
-	if(((dev->bmAttributes>>4)&0b11)==0b00){usage_type="Data endpoint";}
-	if(((dev->bmAttributes>>4)&0b11)==0b01){usage_type="Feedback endpoint";}
-	if(((dev->bmAttributes>>4)&0b11)==0b10){usage_type="Implicit feedback data endpoint";}
-	if(((dev->bmAttributes>>4)&0b11)==0b11){usage_type="Reserved endpoint";}
-
-	if(((dev->bmAttributes>>2)&0b11)==0b00){synchronisation_type="No synchronization";}
-	if(((dev->bmAttributes>>2)&0b11)==0b01){synchronisation_type="Asynchronous";}
-	if(((dev->bmAttributes>>2)&0b11)==0b10){synchronisation_type="Adaptive";}
-	if(((dev->bmAttributes>>2)&0b11)==0b11){synchronisation_type="Synchronous";}
-
-	if(((dev->bmAttributes)&0b11)==0b00){transfer_type="Control";}
-	if(((dev->bmAttributes)&0b11)==0b01){transfer_type="Isochronous";}
-	if(((dev->bmAttributes)&0b11)==0b10){transfer_type="Bulk";}
-	if(((dev->bmAttributes)&0b11)==0b11){transfer_type="Interrupt";}
-
-	printk("interface descriptor endpoint\n");
-	printk("- %s : %x \n","bLength",dev->bLength);
-	printk("- %s : %x \n","bDescriptorType",dev->bDescriptorType);
-	printk("- %s : %x dir:%x num:%x \n","bEndpointAddress",dev->bEndpointAddress,(dev->bEndpointAddress >> 7)&1,dev->bEndpointAddress & 0xF);
-	printk("- %s : %x %s %s %s \n","bmAttributes",dev->bmAttributes,usage_type,synchronisation_type,transfer_type);
-	printk("- %s : %x \n","wMaxPacketSize",dev->wMaxPacketSize);
-}
 
 void xhci_stop(){
 	// Do we still run?
@@ -740,13 +683,13 @@ uint8_t xhci_send_bulk(USBRing *device,void *data,int size)
 }
 
 void xhci_fill_endpoint(USBSocket* socket,usb_endpoint* ep,void* ring,int id,int eptype){
-	memclear((void*)&socket->dataset->epx[id],sizeof(XHCIEndpointContext));
-	socket->dataset->epx[id].EPType = eptype;
-	socket->dataset->epx[id].MaxPacketSize = ep->wMaxPacketSize;
-	socket->dataset->epx[id].Cerr = 3;
-	socket->dataset->epx[id].TRDequeuePointerLow = ((uint32_t) (uint64_t) ring)>>4 ;
-	socket->dataset->epx[id].TRDequeuePointerHigh = 0;
-	socket->dataset->epx[id].DequeueCycleState = 1;
+	memclear((void*)&((XHCIInputContextBuffer*)socket->dataset)->epx[id],sizeof(XHCIEndpointContext));
+	((XHCIInputContextBuffer*)socket->dataset)->epx[id].EPType = eptype;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[id].MaxPacketSize = ep->wMaxPacketSize;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[id].Cerr = 3;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[id].TRDequeuePointerLow = ((uint32_t) (uint64_t) ring)>>4 ;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[id].TRDequeuePointerHigh = 0;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[id].DequeueCycleState = 1;
 }
 
 void xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
@@ -758,8 +701,8 @@ void xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoi
 	// IN endpoint direction
 	xhci_fill_endpoint(socket,ep2,ring2,1,6);
 
-	socket->dataset->icc.Aregisters = 0b1111;
-	socket->dataset->slotcontext.ContextEntries = 3;
+	((XHCIInputContextBuffer*)socket->dataset)->icc.Aregisters = 0b1111;
+	((XHCIInputContextBuffer*)socket->dataset)->slotcontext.ContextEntries = 3;
 
 	xhci_request_device_update(socket->control->deviceaddr,socket->dataset);
 
@@ -885,6 +828,7 @@ void xhci_initialise_port(int portno)
 	socket->control = ringinfo;
 	socket->dataset = infostructures;
 	socket->descriptors = cinforaw;
+	socket->usbver = 3;
 
 	install_new_usb_device(desc,socket);
 }

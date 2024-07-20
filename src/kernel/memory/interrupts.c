@@ -84,17 +84,17 @@ void initialise_interrupts(){
   outportb(PIC1_DATA,oldpic1);
   outportb(PIC2_DATA,oldpic2);
 
-   idtr.Offset = (uintptr_t)&idt[0];
-    idtr.Limit = (uint16_t)sizeof(IDTDescEntry) * IDT_MAX_DESCRIPTORS - 1;
+  idtr.Offset = (uintptr_t)&idt[0];
+  idtr.Limit = (uint16_t)sizeof(IDTDescEntry) * IDT_MAX_DESCRIPTORS - 1;
 
-    IDTDescEntry *idtentries = (IDTDescEntry*) idtr.Offset;
-    for(uint16_t i = 0 ; i < idtr.Limit ; i++){
-        setRawInterrupt(i,NakedInterruptHandler);
-    }
-    for(uint16_t i = 0 ; i < PIC_OFFSET ; i++){
-        setRawInterrupt(i,GeneralFault_Handler);
-    }
-    asm volatile ("lidt %0" : : "m"(idtr));
-    asm volatile ("sti");
+  IDTDescEntry *idtentries = (IDTDescEntry*) idtr.Offset;
+  for(uint16_t i = 0 ; i < idtr.Limit ; i++){
+      setRawInterrupt(i,NakedInterruptHandler);
+  }
+  for(uint16_t i = 0 ; i < PIC_OFFSET ; i++){
+      setRawInterrupt(i,GeneralFault_Handler);
+  }
+  asm volatile ("lidt %0" : : "m"(idtr));
+  asm volatile ("sti");
 }
 

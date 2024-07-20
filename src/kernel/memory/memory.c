@@ -43,3 +43,7 @@ void* calloc(uint64_t requested_size){
   memclear(dat,requested_size);
   return dat;
 }
+
+void* free(void* a){
+  return a;
+}

@@ -21,3 +21,5 @@ uint32_t pciConfigReadDWord(uint8_t bus,uint8_t slot,uint8_t function,uint8_t of
 uint8_t pciConfigReadByte(uint8_t bus,uint8_t slot,uint8_t function,uint8_t offset);
 uint8_t pciConfigReadByteHi(uint8_t bus,uint8_t slot,uint8_t function,uint8_t offset);
 void install_interrupt_from_pci(uint8_t bus,uint8_t slot,uint8_t function,void *callable);
+void pciConfigWriteWord (uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint16_t value);
+void pciConfigWriteDWord(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint32_t value);

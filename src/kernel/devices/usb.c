@@ -1,8 +1,10 @@
 #include "../include/string.h"
+#include "../include/memory.h"
 #include "../include/usb.h"
 #include "../include/usb_msd.h"
 #include "../include/usb_hid.h"
-#include "../include/xhci.h"
+#include "../include/usb_xhci.h"
+#include "../include/usb_ehci.h"
 
 void usb_dump_descriptor(usb_interface_descriptor* desc){
 	switch(desc->bInterfaceClass){
@@ -54,24 +56,113 @@ void usb_dump_descriptor(usb_interface_descriptor* desc){
 	printk("\n");
 }
 
+void usb_dump_device_descriptor(USBStandardDeviceDescriptor* desc){
+	printk("USB Standard Device Descriptor\n");
+	printk("- bLength            : %x \n",desc->bLength);
+	printk("- bDescriptorType    : %x \n",desc->bDescriptorType);
+	printk("- bcdUSB             : %x \n",desc->bcdUSB);
+	printk("- bDeviceClass       : %x \n",desc->bDeviceClass);
+	printk("- bDeviceSubClass    : %x \n",desc->bDeviceSubClass);
+	printk("- bDeviceProtocol    : %x \n",desc->bDeviceProtocol);
+	printk("- bMaxPacketSize0    : %x \n",desc->bMaxPacketSize0);
+	printk("- idVendor           : %x \n",desc->idVendor);
+	printk("- idProduct          : %x \n",desc->idProduct);
+	printk("- bcdDevice          : %x \n",desc->bcdDevice);
+	printk("- iManufacturer      : %x \n",desc->iManufacturer);
+	printk("- iProduct           : %x \n",desc->iProduct);
+	printk("- iSerialNumber      : %x \n",desc->iSerialNumber);
+	printk("- bNumConfigurations : %x \n",desc->bNumConfigurations);
+}
+
+void usb_dump_device_type_from_interface(usb_interface_descriptor* desc){
+	printk("interface descriptor\n");
+	printk("- %s : %x \n","bLength",desc->bLength);
+	printk("- %s : %x \n","bDescriptorType",desc->bDescriptorType);
+	printk("- %s : %x \n","bInterfaceNumber",desc->bInterfaceNumber);
+	printk("- %s : %x \n","bAlternateSetting",desc->bAlternateSetting);
+	printk("- %s : %x \n","bNumEndpoints",desc->bNumEndpoints);
+	printk("- %s : %x \n","bInterfaceClass",desc->bInterfaceClass);
+	printk("- %s : %x \n","bInterfaceSubClass",desc->bInterfaceSubClass);
+	printk("- %s : %x \n","bInterfaceProtocol",desc->bInterfaceProtocol);
+	printk("- %s : %x \n","iInterface",desc->iInterface);
+}
+
+void usb_dump_device_endpoint(usb_endpoint *dev){
+	char* usage_type = "unknown";
+	char* synchronisation_type = "unknown";
+	char* transfer_type = "unknown";
+
+	if(((dev->bmAttributes>>4)&0b11)==0b00){usage_type="Data endpoint";}
+	if(((dev->bmAttributes>>4)&0b11)==0b01){usage_type="Feedback endpoint";}
+	if(((dev->bmAttributes>>4)&0b11)==0b10){usage_type="Implicit feedback data endpoint";}
+	if(((dev->bmAttributes>>4)&0b11)==0b11){usage_type="Reserved endpoint";}
+
+	if(((dev->bmAttributes>>2)&0b11)==0b00){synchronisation_type="No synchronization";}
+	if(((dev->bmAttributes>>2)&0b11)==0b01){synchronisation_type="Asynchronous";}
+	if(((dev->bmAttributes>>2)&0b11)==0b10){synchronisation_type="Adaptive";}
+	if(((dev->bmAttributes>>2)&0b11)==0b11){synchronisation_type="Synchronous";}
+
+	if(((dev->bmAttributes)&0b11)==0b00){transfer_type="Control";}
+	if(((dev->bmAttributes)&0b11)==0b01){transfer_type="Isochronous";}
+	if(((dev->bmAttributes)&0b11)==0b10){transfer_type="Bulk";}
+	if(((dev->bmAttributes)&0b11)==0b11){transfer_type="Interrupt";}
+
+	printk("interface descriptor endpoint\n");
+	printk("- %s : %x \n","bLength",dev->bLength);
+	printk("- %s : %x \n","bDescriptorType",dev->bDescriptorType);
+	printk("- %s : %x dir:%x num:%x \n","bEndpointAddress",dev->bEndpointAddress,(dev->bEndpointAddress >> 7)&1,dev->bEndpointAddress & 0xF);
+	printk("- %s : %x %s %s %s \n","bmAttributes",dev->bmAttributes,usage_type,synchronisation_type,transfer_type);
+	printk("- %s : %x \n","wMaxPacketSize",dev->wMaxPacketSize);
+}
+
 usb_endpoint* getUSBEndpoint(void* info,int type){
-	return xhci_get_endpoint(info,type);
+	if(((USBSocket*)info)->usbver==3){
+		return xhci_get_endpoint(info,type);
+	}else if(((USBSocket*)info)->usbver==2){
+		return ehci_get_endpoint(info,type);
+	}else{
+		printk("called %s but it is not supported!\n",__func__);for(;;);
+	}
 }
 
 int usb_send_bulk(void* info,void* buffer,int size){
-	return xhci_send_bulk (((USBSocket*)info)->out,buffer,size);
+	if(((USBSocket*)info)->usbver==3){
+		return xhci_send_bulk (((USBSocket*)info)->out,buffer,size);
+	}else if(((USBSocket*)info)->usbver==2){
+		return ehci_send_bulk (((USBSocket*)info)->out,buffer,size);
+	}else{
+		printk("called %s but it is not supported!\n",__func__);for(;;);
+	}
 }
 
 int usb_recieve_bulk(void* info,void* buffer,int size){
-	return xhci_recieve_bulk (((USBSocket*)info)->in,buffer,size);
+	if(((USBSocket*)info)->usbver==3){
+		return xhci_recieve_bulk (((USBSocket*)info)->in,buffer,size);
+	}else if(((USBSocket*)info)->usbver==2){
+		return ehci_recieve_bulk (((USBSocket*)info)->in,buffer,size);
+	}else{
+		printk("called %s but it is not supported!\n",__func__);for(;;);
+	}
 }
 
 void usb_register_bulk_endpoints(void* info,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
-	return xhci_register_bulk_endpoints (info, ep1, ep2, ring1, ring2);
+	if(((USBSocket*)info)->usbver==3){
+		return xhci_register_bulk_endpoints (info, ep1, ep2, ring1, ring2);
+	}else if(((USBSocket*)info)->usbver==2){
+		return ehci_register_bulk_endpoints (info, ep1, ep2, ring1, ring2);
+	}else{
+		printk("called %s but it is not supported!\n",__func__);for(;;);
+	}
 }
 
-uint8_t usb_request_set_config(void *device,uint8_t configid){
-	return xhci_request_set_config (((USBSocket*)device)->control, configid);
+uint8_t usb_request_set_config(void *info,uint8_t configid){
+	if(((USBSocket*)info)->usbver==3){
+		return xhci_request_set_config (((USBSocket*)info)->control, configid);
+	}else if(((USBSocket*)info)->usbver==2){
+		return ehci_request_set_config (((USBSocket*)info)->control, configid);
+	}else{
+		printk("called %s but it is not supported!\n",__func__);for(;;);
+	}
 }
 
 void install_new_usb_device(usb_interface_descriptor* desc,void *info){
@@ -82,4 +173,18 @@ void install_new_usb_device(usb_interface_descriptor* desc,void *info){
 	}else{
 		usb_dump_descriptor(desc);
 	}
+}
+
+USBCommand *usb_generate_command_structure(uint8_t request, uint8_t dir, uint8_t type, uint8_t recieve, uint16_t windex,uint16_t wlength, uint16_t wvalue)
+{
+    USBCommand *command = (USBCommand*) calloc(0x1000);
+    command->bRequest = request; // set address
+    command->bRequestType = 0;
+    command->bRequestType |= dir; // dir is out
+    command->bRequestType |= (type<<5); // type is standard
+    command->bRequestType |= recieve; // recieve 
+    command->wIndex = windex; 
+    command->wLength = wlength;
+    command->wValue = wvalue;
+    return command;
 }

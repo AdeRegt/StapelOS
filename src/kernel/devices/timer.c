@@ -29,4 +29,6 @@ void initialise_timer(){
 	outportb(0x40, divisor & 0xFF);   /* Set low byte of divisor */
 	outportb(0x40, divisor >> 8);     /* Set high byte of divisor */
   setInterrupt (0, timer_int);
+  outportb(0xA0,0x20);
+	outportb(0x20,0x20);
 }

@@ -405,22 +405,6 @@ typedef struct{
     uint8_t SlotID;
 }__attribute__((packed)) ConfigureEndpointCommandTRB;
 
-typedef struct{
-  void* ring;
-  int pointer;
-  int stat;
-  int doorbelid;
-  int deviceaddr;
-}__attribute__((packed)) USBRing;
-
-typedef struct{
-  USBRing *control;
-  USBRing *out;
-  USBRing *in;
-  XHCIInputContextBuffer* dataset;
-  void *descriptors;
-}__attribute__((packed)) USBSocket;
-
 uint8_t xhci_send_bulk(USBRing *device,void *data,int size);
 uint8_t xhci_recieve_bulk(USBRing *device,void *data,int size);
 usb_endpoint* xhci_get_endpoint(USBSocket* info,int type);

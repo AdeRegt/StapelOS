@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "usb_xhci.h": "c",
+        "stdint.h": "c",
+        "usb_ehci.h": "c",
+        "interrupts.h": "c",
+        "usb.h": "c",
+        "memory.h": "c"
+    }
+}
