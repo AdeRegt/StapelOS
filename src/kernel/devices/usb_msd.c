@@ -37,11 +37,15 @@ void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter,void* out
 
     usb_send_bulk (data, ep, sizeof(CommandBlockWrapper));
 
-		usb_recieve_bulk(data,out,sizeof(CommandStatusWrapper) + (512*counter));
+	usb_recieve_bulk(data,out,sizeof(CommandStatusWrapper) + (512*counter));
 
-		CommandStatusWrapper *csw = (CommandStatusWrapper*) (out + (512*counter));
-		// printk("status: %x residue: %x tag: %x signature: %x \n",csw->status,csw->data_residue,csw->tag,csw->signature);
-		return out;
+	CommandStatusWrapper *csw = (CommandStatusWrapper*) (out + (512*counter));
+	if(csw->signature!=0x53425355){
+		printk("usb_msd: invalid signature!\n");
+		printk("status: %x residue: %x tag: %x signature: %x \n",csw->status,csw->data_residue,csw->tag,csw->signature);
+		return 0;
+	}
+	return out;
 }
 
 void *rsb;

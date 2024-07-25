@@ -293,7 +293,7 @@ uint8_t ehci_recieve_bulk(USBRing *device,void *command,int size)
     uint32_t pointer = 0;
     uint16_t packagel = 0;
     uint16_t i = 0;
-    uint8_t toggle = 1;
+    uint8_t toggle = 0;
     while(1)
     {
         packagel = size-pointer;

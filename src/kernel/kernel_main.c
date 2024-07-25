@@ -6,6 +6,7 @@
 #include "include/pci.h"
 #include "include/timer.h"
 #include "include/fat.h"
+#include "include/filesystem.h"
 #include "include/stapelbridge.h"
 
 /**
@@ -49,9 +50,11 @@ void kernel_main(BootInfo* bi){
   initialise_timer();
   initialise_pci();
   printk("Ready.\n");
-	if(fat_filesystem_is_enabled()){
-		printk("Filesystem is enabled!\n");
-		load_stapel_tutorial();
-	}
+  if(fat_filesystem_is_enabled()){
+	printk("Filesystem is enabled!\n");
+	printk("Root directory: %s \n",fat_dir());
+	load_stapel_tutorial();
+  }
+  printk("System is finished\n");
   for(;;);
 }

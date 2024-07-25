@@ -155,6 +155,8 @@ void fat_initialise_fat(Partition part){
 	information->template = filesystembuffer;
 	information->root_directory_index = root_directory_index;
 	information->base = part.lba_start;
+	// fat_dump_boot_block(bpb);
+	printk("FAT32 Filesystem discovered!\n");
 }
 
 void fat_handle_partition(Partition part){
