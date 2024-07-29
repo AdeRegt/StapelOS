@@ -15,10 +15,7 @@ void load_stapel_file_singletasking(char* path){
 	}
 	StapelMultitaskingInstance* cv = insert_stapel_cardridge (find);
 	if(cv){
-		while(1)
-		{
-			handle_next_instruction(cv);
-		}
+		while(handle_next_instruction(cv));
 	}
 }
 

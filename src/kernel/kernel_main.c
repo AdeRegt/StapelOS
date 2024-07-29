@@ -8,6 +8,7 @@
 #include "include/fat.h"
 #include "include/filesystem.h"
 #include "include/stapelbridge.h"
+#include "include/ps2_keyboard.h"
 
 /**
  * @brief Bootinfo structure given by the program that booted us
@@ -49,6 +50,7 @@ void kernel_main(BootInfo* bi){
   initialise_paging();
   initialise_timer();
   initialise_pci();
+  initialise_ps2_keyboard();
   printk("Ready.\n");
   if(fat_filesystem_is_enabled()){
 	printk("Filesystem is enabled!\n");

@@ -69,15 +69,7 @@ void install_interrupt_from_pci(uint8_t bus,uint8_t slot,uint8_t function,void *
   setInterrupt(interrupt_line,callable);
 }
 
-void check_pci_entry(uint8_t bus,uint8_t slot,uint8_t function){
-  uint16_t vendor = pciConfigReadWord(bus,slot,function,PCI_FIELDS_VENDOR);
-  if(vendor==PCI_FIELDS_NO_VENDOR){
-    return;
-  }
-  uint16_t device = pciConfigReadWord(bus,slot,function,PCI_FIELDS_DEVICE);
-  if(device!=PCI_FIELDS_DEVICE_USB){
-    return;
-  }
+void check_pci_entry_for_usb(uint8_t bus,uint8_t slot,uint8_t function){
   uint8_t interface = pciConfigReadByteHi(bus,slot,function,PCI_FIELDS_INTERFACE);
   if(interface==0x00||interface==0x10){
     // printk("USB1.0 found\n");
@@ -87,6 +79,17 @@ void check_pci_entry(uint8_t bus,uint8_t slot,uint8_t function){
     initialise_xhci (bus, slot, function);
   }else{
     printk("error: unknown USB type\n");
+  }
+}
+
+void check_pci_entry(uint8_t bus,uint8_t slot,uint8_t function){
+  uint16_t vendor = pciConfigReadWord(bus,slot,function,PCI_FIELDS_VENDOR);
+  if(vendor==PCI_FIELDS_NO_VENDOR){
+    return;
+  }
+  uint16_t device = pciConfigReadWord(bus,slot,function,PCI_FIELDS_DEVICE);
+  if(device==PCI_FIELDS_DEVICE_USB){
+    check_pci_entry_for_usb(bus,slot,function);
   }
 }
 

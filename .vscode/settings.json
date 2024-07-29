@@ -5,6 +5,9 @@
         "usb_ehci.h": "c",
         "interrupts.h": "c",
         "usb.h": "c",
-        "memory.h": "c"
+        "memory.h": "c",
+        "stapelbridge.h": "c",
+        "ps2_keyboard.h": "c",
+        "timer.h": "c"
     }
 }
