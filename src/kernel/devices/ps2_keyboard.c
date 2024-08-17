@@ -141,13 +141,13 @@ uint8_t ps2_chip_get_current_scancode_set(){
     sleep(2);
     ps2_write_data_port(0);
     sleep(2);
-    uint8_t res = ps2_read_data_port();
+    uint8_t res = 0;
+    res = ps2_read_data_port();
     sleep(2);
     if(res!=PS2_DATA_RESPONSE_ACK){
         printk("unexpected responsein %s !=%x \n",__func__,res);
         return 0;
     }
-    sleep(2);
     return ps2_read_data_port();
 }
 
@@ -217,7 +217,7 @@ void initialise_ps2_keyboard(){
     }
     if(ps2_chip_get_current_scancode_set()!=0x41){
         printk("%s: unexpected scancode set , it returns: %x \n",__func__,ps2_chip_get_current_scancode_set());
-        return;
+        // return;
     }
     setInterrupt(1, irq_keyboard);
     if(ps2_chip_enablescanning()==0){
