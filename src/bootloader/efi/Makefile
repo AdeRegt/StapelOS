@@ -5,6 +5,7 @@ all:
 	$(MAKE) -C origin/inc
 	$(MAKE) -C origin/lib
 	$(MAKE) -C src
+	$(MAKE) -C src clean
 	$(MAKE) -C origin clean
 	$(MAKE) -C origin/apps clean
 	$(MAKE) -C origin/gnuefi clean

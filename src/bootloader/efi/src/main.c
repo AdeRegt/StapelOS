@@ -5,9 +5,6 @@
 #include "../origin/inc/efilib.h"
 #include <elf.h>
 
-#ifndef _boot
-#define _boot
-
 #include <stdint.h>
 
 typedef struct {
@@ -77,7 +74,6 @@ typedef struct{
 	 */
 	void *rsdp;
 } BootInfo;
-#endif
 
 typedef struct {
 	void* BaseAddress;
@@ -245,6 +241,7 @@ void* FindTable(SDTHeader* sdtHeader, char* signature){
 
 EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 	InitializeLib(ImageHandle, SystemTable);
+	// Print(L"Goodbye cruel world! \n\r");for(;;);
 
 	EFI_FILE* Kernel = LoadFile(NULL, L"kernel64.sys", ImageHandle, SystemTable);
 	if (Kernel == NULL){
@@ -311,7 +308,7 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 		}
 	}
 
-	Print(L"Kernel Loaded\n\r");
+	// Print(L"Kernel Loaded\n\r");
 
 
 	Framebuffer* newBuffer = InitializeGOP();

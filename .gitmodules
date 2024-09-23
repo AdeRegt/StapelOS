@@ -1,6 +1,6 @@
 [submodule "src/bootloader/efi/origin"]
 	path = src/bootloader/efi/origin
-	url = https://salsa.debian.org/efi-team/gnu-efi.git
+	url = https://github.com/ncroxon/gnu-efi.git
 [submodule "src/interpeter"]
 	path = src/interpeter
 	url = git@github.com:AdeRegt/Stapel.git
