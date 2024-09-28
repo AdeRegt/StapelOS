@@ -19,6 +19,9 @@ void setCR2(uint64_t cr);
 void setCR3(uint64_t cr);
 void setCR4(uint64_t cr);
 
+void cli();
+void sti();
+
 int get_model(void);
 int check_apic(void);
 void cpuid(int code, uint32_t *a, uint32_t *d);

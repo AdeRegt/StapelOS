@@ -48,7 +48,7 @@ TARGETS = $(TARGET_APPS) $(TARGET_BSDRIVERS) $(TARGET_RTDRIVERS)
 CFLAGS += -Wno-error=unused-parameter -Wno-error=unused-variable
 
 all:	$(TARGETS)
-	mv ./main.efi ./../../../../bin/bootx64.efi
+	mv ./main.efi ./../../../../bin/efi/boot/bootx64.efi
 
 clean:
 	rm -f $(TARGETS) *~ *.o *.so

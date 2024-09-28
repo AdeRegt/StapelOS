@@ -8,6 +8,9 @@
         "memory.h": "c",
         "stapelbridge.h": "c",
         "ps2_keyboard.h": "c",
-        "timer.h": "c"
+        "timer.h": "c",
+        "algorithm": "c",
+        "string.h": "c",
+        "cpu.h": "c"
     }
 }

@@ -20,26 +20,6 @@ __attribute__((interrupt)) void NakedInterruptHandler(interrupt_frame* frame){
 	interrupt_eoi();
 }
 
-void interrupt_set_offset(IDTDescEntry* int_PageFault,uint64_t offset){
-  int_PageFault->offset0 = (uint16_t)(offset & 0x000000000000ffff);
-  int_PageFault->offset1 = (uint16_t)((offset & 0x00000000ffff0000) >> 16);
-  int_PageFault->offset2 = (uint32_t)((offset & 0xffffffff00000000) >> 32);
-}
-
-void setInterrupt(int offset,void *fun){
-  IDTDescEntry* int_PageFault = (IDTDescEntry*)(idtr.Offset + ((offset+PIC_OFFSET) * sizeof(IDTDescEntry)));
-  interrupt_set_offset(int_PageFault,(uint64_t)fun);
-  int_PageFault->type_attr = IDT_TA_InterruptGate;
-  int_PageFault->selector = GDT_CODE_SEGMENT;
-}
-
-void setRawInterrupt(int offset,void *fun){
-  IDTDescEntry* int_PageFault = (IDTDescEntry*)(idtr.Offset + ((offset) * sizeof(IDTDescEntry)));
-  interrupt_set_offset(int_PageFault,(uint64_t)fun);
-  int_PageFault->type_attr = IDT_TA_TrapGate;
-  int_PageFault->selector = GDT_CODE_SEGMENT;
-}
-
 void IRQ_set_mask(unsigned char IRQline) {
   uint16_t port;
   uint8_t value;
@@ -66,6 +46,27 @@ void IRQ_clear_mask(unsigned char IRQline) {
   }
   value = inportb(port) & ~(1 << IRQline);
   outportb(port, value);
+}
+
+void interrupt_set_offset(IDTDescEntry* int_PageFault,uint64_t offset){
+  int_PageFault->offset0 = (uint16_t)(offset & 0x000000000000ffff);
+  int_PageFault->offset1 = (uint16_t)((offset & 0x00000000ffff0000) >> 16);
+  int_PageFault->offset2 = (uint32_t)((offset & 0xffffffff00000000) >> 32);
+}
+
+void setInterrupt(int offset,void *fun){
+  IDTDescEntry* int_PageFault = (IDTDescEntry*)(idtr.Offset + ((offset+PIC_OFFSET) * sizeof(IDTDescEntry)));
+  interrupt_set_offset(int_PageFault,(uint64_t)fun);
+  int_PageFault->type_attr = IDT_TA_InterruptGate;
+  int_PageFault->selector = GDT_CODE_SEGMENT;
+  IRQ_clear_mask(offset + PIC_OFFSET);
+}
+
+void setRawInterrupt(int offset,void *fun){
+  IDTDescEntry* int_PageFault = (IDTDescEntry*)(idtr.Offset + ((offset) * sizeof(IDTDescEntry)));
+  interrupt_set_offset(int_PageFault,(uint64_t)fun);
+  int_PageFault->type_attr = IDT_TA_TrapGate;
+  int_PageFault->selector = GDT_CODE_SEGMENT;
 }
 
 void initialise_interrupts(){

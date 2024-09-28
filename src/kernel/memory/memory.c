@@ -4,7 +4,10 @@
 MemoryBlockDescriptor memoryblock[MAX_SIZE_MEMORYTABLE];
 uint64_t freememorypointer = 0;
 
+MemoryInfo* memory_info;
+
 void initialise_memory(MemoryInfo* mem){
+  memory_info = mem;
   uint64_t memoryitemcount = mem->mMapSize / mem->mMapDescSize;
   for(uint64_t i = 0 ; i < memoryitemcount ; i++){
     MemoryDescriptor *desc = (MemoryDescriptor*) ( ((uint64_t)mem->mMap) + ( i * mem->mMapDescSize ));
@@ -26,15 +29,18 @@ void *memclear(void *str,uint64_t n){
 }
 
 void* malloc(uint64_t requested_size){
-  for(int i = 0 ; i < MAX_SIZE_MEMORYTABLE ; i++){
-    if(memoryblock[i].valid==0){
-      memoryblock[i].valid = 1;
-      memoryblock[i].start = freememorypointer;
-      freememorypointer += requested_size;
-      memoryblock[i].end = freememorypointer;
-      return (void*) memoryblock[i].start;
+  uint64_t memoryitemcount = memory_info->mMapSize / memory_info->mMapDescSize;
+  for(uint64_t i = 0 ; i < memoryitemcount ; i++){
+    MemoryDescriptor *desc = (MemoryDescriptor*) ( ((uint64_t)memory_info->mMap) + ( i * memory_info->mMapDescSize ));
+    if(desc->Type==7&&desc->PhysicalStart){
+      if((desc->PhysicalStart+requested_size)<=(desc->PhysicalStart+(desc->NumberOfPages*0x1000))){
+        uint64_t r = desc->PhysicalStart;
+        desc->PhysicalStart += requested_size;
+        return (void*)r;
+      }
     }
   }
+  printk("__fatal: out of memory\n");for(;;);
   return 0;
 }
 

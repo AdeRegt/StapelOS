@@ -125,6 +125,14 @@ void setCR4(uint64_t cr){
     );
 }
 
+void cli(){
+    __asm__ __volatile__ ("cli");
+}
+
+void sti(){
+    __asm__ __volatile__ ("cli");
+}
+
 // https://en.wikipedia.org/wiki/CPUID
 
 

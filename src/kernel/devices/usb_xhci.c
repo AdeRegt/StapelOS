@@ -293,31 +293,36 @@ DefaultTRB *xhci_request_free_command_trb(uint8_t inc)
 
 volatile CommandCompletionEventTRB *xhci_ring_and_wait(uint32_t doorbell_offset,uint32_t doorbell_value,uint32_t checkvalue)
 {
-		DOORBELL[doorbell_offset] = doorbell_value;
+	DOORBELL[doorbell_offset] = doorbell_value;
+	sleep(5);
+	while((IMAN(0)&1)==0)
+	{
 		sleep(5);
-		while((IMAN(0)&1)==0)
+	}
+	int timeout = 5;
+	again:
+	sleep(5);
+	for(int i = 0 ; i < XHCI_EVENT_RING_SIZE ; i++)
+	{
+		volatile CommandCompletionEventTRB *to = (volatile CommandCompletionEventTRB*)&((volatile CommandCompletionEventTRB*)(eventring+(i*sizeof(CommandCompletionEventTRB))))[0];
+		if(to->DataBufferPointerLo==checkvalue)
 		{
-				sleep(5);
+			if(i==(XHCI_EVENT_RING_SIZE-1))
+			{
+				printk("warn: thingi\n");
+			}
+			return to;
 		}
-		int timeout = 5;
-		again:
-		sleep(5);
-		for(int i = 0 ; i < XHCI_EVENT_RING_SIZE ; i++)
-		{
-				volatile CommandCompletionEventTRB *to = (volatile CommandCompletionEventTRB*)&((volatile CommandCompletionEventTRB*)(eventring+(i*sizeof(CommandCompletionEventTRB))))[0];
-				if(to->DataBufferPointerLo==checkvalue)
-				{
-						return to;
-				}
-		}
-		timeout--;
-		if(timeout){
-			goto again;
-		}
-		return 0;
+	}
+	timeout--;
+	if(timeout)
+	{
+		goto again;
+	}
+	return 0;
 }
 
-uint8_t xhci_resultcode_explained(volatile CommandCompletionEventTRB* res)
+uint8_t xhci_resultcode_explained(volatile CommandCompletionEventTRB* res,const char* functionname)
 {
 		const char * cc[] = {
 				"Invalid",
@@ -358,7 +363,7 @@ uint8_t xhci_resultcode_explained(volatile CommandCompletionEventTRB* res)
 				"Secondary Bandwidth Error",
 				"Split Transaction Error"
 		};
-		printk("(%x) %s \n",res->CompletionCode,cc[res->CompletionCode]);
+		printk("(%x) %s in %s \n",res->CompletionCode,cc[res->CompletionCode],functionname);
 		return res->CompletionCode;
 }
 
@@ -380,7 +385,7 @@ uint8_t xhci_request_device_address(uint8_t device_id,void* data,uint8_t bsr )
 		if(res)
 		{
 			if(res->CompletionCode!=1){
-				return xhci_resultcode_explained(res);
+				return xhci_resultcode_explained(res,__func__);
 			}
 			return 1;
 		}
@@ -405,7 +410,7 @@ int xhci_get_device_id(){
 	{
 			if(res->CompletionCode!=1)
 			{
-					return xhci_resultcode_explained(res);
+					return xhci_resultcode_explained(res,__func__);
 			}
 			return res->SlotID;
 	}
@@ -429,7 +434,7 @@ uint8_t xhci_request_ring_test(USBRing *device,int deviceaddr){
 	if(res)
 	{
 			if(res->CompletionCode!=1){
-				return xhci_resultcode_explained(res);
+				return xhci_resultcode_explained(res,__func__);
 			}
 			return 1;
 	}
@@ -459,7 +464,7 @@ uint8_t xhci_request_device_update(uint8_t device_id,void* data )
 		if(res)
 		{
 			if(res->CompletionCode!=1){
-				return xhci_resultcode_explained(res);
+				return xhci_resultcode_explained(res,__func__);
 			}
 			return 1;
 		}
@@ -512,7 +517,7 @@ void *xhci_request_device_configuration(USBRing *device,int deviceaddr)
 		{
 				if(res->CompletionCode!=1)
 				{
-						xhci_resultcode_explained(res);
+						xhci_resultcode_explained(res,__func__);
 						return 0;
 				}
 				return data;
@@ -563,7 +568,7 @@ void *xhci_request_device_descriptor(USBRing *device,int deviceaddr)
 		{
 				if(res->CompletionCode!=1)
 				{
-						xhci_resultcode_explained(res);
+						xhci_resultcode_explained(res,__func__);
 						return 0;
 				}
 				return data;
@@ -600,7 +605,7 @@ uint8_t xhci_request_set_config(USBRing *device,uint8_t configid)
     {
         if(res->CompletionCode!=1)
         {
-            return xhci_resultcode_explained(res);
+            return xhci_resultcode_explained(res,__func__);
         }
         return 1;
     }
@@ -635,7 +640,7 @@ uint8_t xhci_recieve_bulk(USBRing *device,void *data,int size)
     {
         if(res->CompletionCode!=1)
         {
-            return xhci_resultcode_explained(res);
+            return xhci_resultcode_explained(res,__func__);
         }
         return 1;
     }
@@ -671,7 +676,7 @@ uint8_t xhci_send_bulk(USBRing *device,void *data,int size)
     {
         if(res->CompletionCode!=1)
         {
-            return xhci_resultcode_explained(res);
+            return xhci_resultcode_explained(res,__func__);
         }
         return 1;
     }
@@ -751,23 +756,23 @@ void xhci_initialise_port(int portno)
 	uint16_t calculatedportspeed = 0;
 	if(portspeed==XHCI_SPEED_SUPER)
 	{
-			calculatedportspeed = 512;
+		calculatedportspeed = 512;
 	}
 	else if(portspeed==XHCI_SPEED_HI)
 	{
-			calculatedportspeed = 64;
+		calculatedportspeed = 64;
 	}
 	else if(portspeed==XHCI_SPEED_LOW)
 	{
-			calculatedportspeed = 8;
+		calculatedportspeed = 8;
 	}
 	else if(portspeed==XHCI_SPEED_FULL)
 	{
-			calculatedportspeed = 64;return;
+		calculatedportspeed = 64;return;
 	}
 	else
 	{
-			return;
+		return;
 	}
 
 	// now get a device id
@@ -817,8 +822,8 @@ void xhci_initialise_port(int portno)
 
 	USBStandardDeviceDescriptor* devdesc = (USBStandardDeviceDescriptor*) xhci_request_device_descriptor(ringinfo,deviceid);
 	if(portspeed==XHCI_SPEED_FULL&&devdesc->bMaxPacketSize0!=64){
-			printk("We have a fullspeed here! different maxpackagesize: %d \n",devdesc->bMaxPacketSize0);
-			return;
+		printk("We have a fullspeed here! different maxpackagesize: %d \n",devdesc->bMaxPacketSize0);
+		return;
 	}
 
 	uint8_t* cinforaw = (uint8_t*)xhci_request_device_configuration(ringinfo,deviceid);
