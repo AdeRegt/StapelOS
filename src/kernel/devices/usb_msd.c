@@ -86,7 +86,11 @@ void install_usb_msd(usb_interface_descriptor* desc,void *data){
 	void *localoutring = calloc(0x1000);
 	void *localinring = calloc(0x1000);
 
-	usb_register_bulk_endpoints(data,ep1,ep2,localoutring,localinring);
+	uint8_t res = usb_register_bulk_endpoints(data,ep1,ep2,localoutring,localinring);
+	if(res!=1)
+	{
+		return;
+	}
 
 	usb_request_set_config(data,1);
 

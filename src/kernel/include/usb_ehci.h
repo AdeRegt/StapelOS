@@ -91,7 +91,7 @@ typedef struct __attribute__ ((packed)) {
 
 void initialise_ehci(uint8_t bus, uint8_t slot, uint8_t func);
 usb_endpoint* ehci_get_endpoint(USBSocket* info,int type);
-void ehci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2);
+uint8_t ehci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2);
 uint8_t ehci_request_set_config(USBRing *device,uint8_t configid);
 uint8_t ehci_send_bulk(USBRing *device,void *data,int size);
 uint8_t ehci_recieve_bulk(USBRing *device,void *data,int size);

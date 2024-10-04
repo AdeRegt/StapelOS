@@ -105,7 +105,7 @@ typedef struct __attribute__ ((packed)) {
 usb_endpoint* getUSBEndpoint(void* info,int type);
 int usb_send_bulk(void* info,void* buffer,int size);
 int usb_recieve_bulk(void* info,void* buffer,int size);
-void usb_register_bulk_endpoints(void* info,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2);
+uint8_t usb_register_bulk_endpoints(void* info,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2);
 uint8_t usb_request_set_config(void *device,uint8_t configid);
 void install_new_usb_device(usb_interface_descriptor* desc,void *info);
 USBCommand *usb_generate_command_structure(uint8_t request, uint8_t dir, uint8_t type, uint8_t recieve, uint16_t windex,uint16_t wlength, uint16_t wvalue);

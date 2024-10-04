@@ -232,7 +232,7 @@ usb_endpoint* ehci_get_endpoint(USBSocket* info,int type){
     return (usb_endpoint*)(((unsigned long)info->descriptors)+sizeof(usb_config_descriptor)+sizeof(usb_interface_descriptor)+(sizeof(usb_endpoint)*type));
 }
 
-void ehci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
+uint8_t ehci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
 
 	USBRing *ringbulkout = (USBRing*) calloc(0x1000);
 	ringbulkout->ring = ring1;
@@ -250,6 +250,7 @@ void ehci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoi
 
 	socket->out = ringbulkout;
 	socket->in = ringbulkin;
+    return 1;
 }
 
 uint8_t ehci_request_set_config(USBRing *device,uint8_t configid){

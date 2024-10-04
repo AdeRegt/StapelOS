@@ -408,6 +408,6 @@ typedef struct{
 uint8_t xhci_send_bulk(USBRing *device,void *data,int size);
 uint8_t xhci_recieve_bulk(USBRing *device,void *data,int size);
 usb_endpoint* xhci_get_endpoint(USBSocket* info,int type);
-void xhci_register_bulk_endpoints(USBSocket* info,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2);
+uint8_t xhci_register_bulk_endpoints(USBSocket* info,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2);
 uint8_t xhci_request_set_config(USBRing *device,uint8_t configid);
 void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func);

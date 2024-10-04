@@ -697,7 +697,7 @@ void xhci_fill_endpoint(USBSocket* socket,usb_endpoint* ep,void* ring,int id,int
 	((XHCIInputContextBuffer*)socket->dataset)->epx[id].DequeueCycleState = 1;
 }
 
-void xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
+uint8_t xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
 	//
 	// OUT endpoint direction
 	xhci_fill_endpoint(socket,ep1,ring1,0,2);
@@ -709,7 +709,10 @@ void xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoi
 	((XHCIInputContextBuffer*)socket->dataset)->icc.Aregisters = 0b1111;
 	((XHCIInputContextBuffer*)socket->dataset)->slotcontext.ContextEntries = 3;
 
-	xhci_request_device_update(socket->control->deviceaddr,socket->dataset);
+	uint8_t rs = xhci_request_device_update(socket->control->deviceaddr,socket->dataset);
+	if(rs!=1){
+		return 0;
+	}
 
 	USBRing *ringbulkout = (USBRing*) calloc(0x1000);
 	ringbulkout->ring = ring1;
@@ -727,6 +730,7 @@ void xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoi
 
 	socket->out = ringbulkout;
 	socket->in = ringbulkin;
+	return 1;
 }
 
 usb_endpoint* xhci_get_endpoint(USBSocket* info,int type){

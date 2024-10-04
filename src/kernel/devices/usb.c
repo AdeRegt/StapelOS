@@ -145,7 +145,7 @@ int usb_recieve_bulk(void* info,void* buffer,int size){
 	}
 }
 
-void usb_register_bulk_endpoints(void* info,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
+uint8_t usb_register_bulk_endpoints(void* info,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
 	if(((USBSocket*)info)->usbver==3){
 		return xhci_register_bulk_endpoints (info, ep1, ep2, ring1, ring2);
 	}else if(((USBSocket*)info)->usbver==2){
