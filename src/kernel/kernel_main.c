@@ -54,8 +54,13 @@ void kernel_main(BootInfo* bi){
   printk("Ready.\n");
   if(fat_filesystem_is_enabled()){
 	printk("Filesystem is enabled!\n");
-	printk("Root directory: %s \n",fat_dir());
-	load_stapel_tutorial();
+	char *dir = fat_dir();
+	if(dir){
+		printk("Root directory: %s \n",dir);
+		load_stapel_tutorial();
+	}else{
+		printk("Oops: something went wrong while loading the root directory!\n");
+	}
   }
   printk("System is finished\n");
   for(;;);

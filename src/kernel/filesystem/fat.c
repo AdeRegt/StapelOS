@@ -69,7 +69,11 @@ uint32_t fat_read(int filepointer,void* where){
 		FAT32BootBlock* bb = (FAT32BootBlock*) &information->bootblock->extended_section;
 		uint32_t lol = ( information->base + (information->root_directory_index + ( defo.cluster_low * information->bootblock->sectors_per_cluster )) ) - ( bb->cluster_num_root * information->bootblock->sectors_per_cluster );
 		char* tt = (char*) read_sectors (lol , ( defo.size/512 ) + 1, where);
-		return defo.size;
+		if(tt){
+			return defo.size;
+		}else{
+			return 0;
+		}
 	}else{
 		return 0;
 	}
