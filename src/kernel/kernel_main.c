@@ -49,6 +49,7 @@ void kernel_main(BootInfo* bi){
   initialise_memory (bi->memory_info);
   initialise_paging();
   initialise_timer();
+  clearFatDetection();
   initialise_pci();
   initialise_ps2_keyboard();
   printk("Ready.\n");

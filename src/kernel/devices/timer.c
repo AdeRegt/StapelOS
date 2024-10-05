@@ -51,6 +51,4 @@ void sleep_seconds(int timeout){
 void initialise_timer(){
   resetTimer();
   setInterrupt (0, timer_int);
-  outportb(0xA0,0x20);
-	outportb(0x20,0x20);
 }

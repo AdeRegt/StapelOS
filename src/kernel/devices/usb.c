@@ -52,6 +52,7 @@ void usb_dump_descriptor(usb_interface_descriptor* desc){
 	case 0xEF: printk("Miscellaneous");break;
 	case 0xFE: printk("Application Specific");break;
 	case 0xFF: printk("Vendor specific");break;
+	default: printk("Unknown");break;
 	}
 	printk("\n");
 }

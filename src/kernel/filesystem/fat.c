@@ -123,6 +123,9 @@ int fat_open(char* filename){
 }
 
 char* fat_dir(){
+	if(!filesystembuffer){
+		return (char*) 0;
+	}
 	char* buffer = (char*) calloc(0x1000);
 	int bufferi = 0;
 	int bufferz = 0;
@@ -149,11 +152,16 @@ char* fat_dir(){
 
 void fat_initialise_fat(Partition part){
 	FATBootBlock *bpb = (FATBootBlock*) calloc(0x1000);
-	read_sectors (part.lba_start , 1, bpb);
+	if(read_sectors (part.lba_start , 1, bpb)==0){
+		return;
+	}
 	FAT32BootBlock* bb = (FAT32BootBlock*) &bpb->extended_section;
 	uint32_t root_directory_index = bpb->reserved_sector_count + ( bpb->table_count * bb->sectors_per_fat );
 	filesystembuffer = (FATFileTemplate*) calloc(0x1000);
-	read_sectors (part.lba_start + root_directory_index , 5, filesystembuffer);
+	if(read_sectors (part.lba_start + root_directory_index , 5, filesystembuffer)==0){
+		filesystembuffer = 0;
+		return;
+	}
 	information = (FATInformation*) calloc(0x1000);
 	information->bootblock = bpb;
 	information->template = filesystembuffer;
@@ -169,9 +177,15 @@ void fat_handle_partition(Partition part){
 	}
 }
 
+void clearFatDetection(){
+	filesystembuffer = 0;
+}
+
 void detect_fat(){
 	MBRTemplate* template = calloc(0x1000);
-	read_sectors (0 , 1, template);
+	if(read_sectors (0 , 1, template)==0){
+		return;
+	}
 	fat_handle_partition (template->partition1);
 	fat_handle_partition (template->partition2);
 	fat_handle_partition (template->partition3);

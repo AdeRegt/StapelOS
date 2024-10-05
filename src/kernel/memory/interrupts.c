@@ -25,10 +25,10 @@ void IRQ_set_mask(unsigned char IRQline) {
   uint8_t value;
 
   if(IRQline < 8) {
-      port = PIC1_DATA;
+    port = PIC1_DATA;
   } else {
-      port = PIC2_DATA;
-      IRQline -= 8;
+    port = PIC2_DATA;
+    IRQline -= 8;
   }
   value = inportb(port) | (1 << IRQline);
   outportb(port, value);
@@ -39,10 +39,10 @@ void IRQ_clear_mask(unsigned char IRQline) {
   uint8_t value;
 
   if(IRQline < 8) {
-      port = PIC1_DATA;
+    port = PIC1_DATA;
   } else {
-      port = PIC2_DATA;
-      IRQline -= 8;
+    port = PIC2_DATA;
+    IRQline -= 8;
   }
   value = inportb(port) & ~(1 << IRQline);
   outportb(port, value);
@@ -90,10 +90,10 @@ void initialise_interrupts(){
 
   IDTDescEntry *idtentries = (IDTDescEntry*) idtr.Offset;
   for(uint16_t i = 0 ; i < idtr.Limit ; i++){
-      setRawInterrupt(i,NakedInterruptHandler);
+    setRawInterrupt(i,NakedInterruptHandler);
   }
   for(uint16_t i = 0 ; i < PIC_OFFSET ; i++){
-      setRawInterrupt(i,GeneralFault_Handler);
+    setRawInterrupt(i,GeneralFault_Handler);
   }
   asm volatile ("lidt %0" : : "m"(idtr));
   asm volatile ("sti");

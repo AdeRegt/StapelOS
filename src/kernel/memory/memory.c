@@ -6,15 +6,12 @@ uint64_t freememorypointer = 0;
 
 MemoryInfo* memory_info;
 
+uint64_t getMemoryInfoBlockCount(){
+  return memory_info->mMapSize / memory_info->mMapDescSize;
+}
+
 void initialise_memory(MemoryInfo* mem){
   memory_info = mem;
-  uint64_t memoryitemcount = mem->mMapSize / mem->mMapDescSize;
-  for(uint64_t i = 0 ; i < memoryitemcount ; i++){
-    MemoryDescriptor *desc = (MemoryDescriptor*) ( ((uint64_t)mem->mMap) + ( i * mem->mMapDescSize ));
-    if(desc->Type==7&&desc->PhysicalStart){
-      freememorypointer = desc->PhysicalStart;
-    }
-  }
 }
 
 void *memset(void *str, int c, uint64_t n){

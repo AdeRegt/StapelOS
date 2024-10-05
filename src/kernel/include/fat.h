@@ -77,3 +77,4 @@ typedef struct{
 
 void detect_fat();
 uint8_t fat_filesystem_is_enabled();
+void clearFatDetection();
