@@ -1,13 +1,13 @@
 all:
 	$(MAKE) -C src
-	grub-mkrescue -o ./media/cdrom.iso ./bin
 
 clean:
 	rm -f test1
 
 # Builder will call this to install the application before running.
 install:
-	cp -r ./bin/* /media/$(USER)/TEST
+	grub-mkrescue -o ./media/cdrom.iso ./bin
+	if [ -d /media/$(USER)/TEST ]; then cp -r ./bin/* /media/$(USER)/TEST ; fi
 
 # Builder uses this target to run your application.
 run:

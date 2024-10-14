@@ -217,7 +217,7 @@ void initialise_ps2_keyboard(){
     }
     if(ps2_chip_get_current_scancode_set()!=0x41){
         printk("%s: unexpected scancode set , it returns: %x \n",__func__,ps2_chip_get_current_scancode_set());
-        // return;
+        return;
     }
     setInterrupt(1, irq_keyboard);
     if(ps2_chip_enablescanning()==0){
