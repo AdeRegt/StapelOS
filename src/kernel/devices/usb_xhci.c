@@ -249,8 +249,6 @@ void xhci_dump_usbport(int n){
 	printk("- Warm Port Reset (WPR)              : %x \n",PORTSC_WPR(n));
 }
 
-
-
 void xhci_stop(){
 	// Do we still run?
 	if(USBCMD_RS){
@@ -299,7 +297,7 @@ volatile CommandCompletionEventTRB *xhci_ring_and_wait(uint32_t doorbell_offset,
 	{
 		sleep(5);
 	}
-	int timeout = 5;
+	int timeout = 15;
 	again:
 	sleep(5);
 	for(int i = 0 ; i < XHCI_EVENT_RING_SIZE ; i++)
@@ -391,7 +389,7 @@ uint8_t xhci_request_device_address(uint8_t device_id,void* data,uint8_t bsr )
 		}
 		else
 		{
-				printk("coulden`t get xhci datatoken\n");
+				printk("coulden`t get xhci datatoken for %s \n",__func__);
 				return 0;
 		}
 }
@@ -416,7 +414,7 @@ int xhci_get_device_id(){
 	}
 	else
 	{
-			printk("coulden`t get xhci datatoken\n");
+			printk("coulden`t get xhci datatoken for %s \n",__func__);
 			return 0;
 	}
 }
@@ -440,12 +438,10 @@ uint8_t xhci_request_ring_test(USBRing *device,int deviceaddr){
 	}
 	else
 	{
-			printk("coulden`t get xhci datatoken\n");
+			printk("coulden`t get xhci datatoken for %s \n",__func__);
 			return 0;
 	}
 }
-
-
 
 uint8_t xhci_request_device_update(uint8_t device_id,void* data )
 {
@@ -470,7 +466,7 @@ uint8_t xhci_request_device_update(uint8_t device_id,void* data )
 		}
 		else
 		{
-				printk("coulden`t get xhci datatoken\n");
+				printk("coulden`t get xhci datatoken for %s \n",__func__);
 				return 0;
 		}
 }
@@ -524,7 +520,7 @@ void *xhci_request_device_configuration(USBRing *device,int deviceaddr)
 		}
 		else
 		{
-				printk("coulden`t get xhci datatoken\n");
+				printk("coulden`t get xhci datatoken for %s \n",__func__);
 				return 0;
 		}
 }
@@ -575,7 +571,7 @@ void *xhci_request_device_descriptor(USBRing *device,int deviceaddr)
 		}
 		else
 		{
-				printk("coulden`t get xhci datatoken\n");
+				printk("coulden`t get xhci datatoken for %s \n",__func__);
 				return 0;
 		}
 }
@@ -611,7 +607,7 @@ uint8_t xhci_request_set_config(USBRing *device,uint8_t configid)
     }
     else
     {
-        printk("coulden`t get xhci datatoken\n");
+        printk("coulden`t get xhci datatoken for %s \n",__func__);
         return 0;
     }
 }
@@ -646,7 +642,7 @@ uint8_t xhci_recieve_bulk(USBRing *device,void *data,int size)
     }
     else
     {
-        printk("coulden`t get xhci datatoken\n");
+        printk("coulden`t get xhci datatoken for %s \n",__func__);
         return 0;
     }
 }
@@ -682,7 +678,7 @@ uint8_t xhci_send_bulk(USBRing *device,void *data,int size)
     }
     else
     {
-        printk("coulden`t get xhci datatoken\n");
+        printk("coulden`t get xhci datatoken for %s \n",__func__);
         return 0;
     }
 }
@@ -737,23 +733,23 @@ usb_endpoint* xhci_get_endpoint(USBSocket* info,int type){
 	return (usb_endpoint*)(((unsigned long)info->descriptors)+sizeof(usb_config_descriptor)+sizeof(usb_interface_descriptor)+(sizeof(usb_endpoint)*type));
 }
 
-void xhci_initialise_port(int portno)
+uint8_t xhci_initialise_port(int portno)
 {
 	// is there something connected?
 	if(PORTSC_CCS(portno)==0)
 	{
-		return;
+		return 0;
 	}
 	// is it enabled?
 	if(PORTSC_PED (portno)==0)
 	{
 		PORTSC(portno) = PORTSC (portno) | 0x10;
-		sleep(7);
+		sleep(15);
 	}
 	// and now?
 	if(PORTSC_PED (portno)==0)
 	{
-		return;
+		return 0;
 	}
 
 	uint8_t portspeed = PORTSC_Port_Speed (portno);
@@ -772,18 +768,19 @@ void xhci_initialise_port(int portno)
 	}
 	else if(portspeed==XHCI_SPEED_FULL)
 	{
-		calculatedportspeed = 64;return;
+		calculatedportspeed = 64;
+		return 0;
 	}
 	else
 	{
-		return;
+		return 0;
 	}
 
 	// now get a device id
 	int deviceid = xhci_get_device_id();
 	if(deviceid==0)
 	{
-		return;
+		return 0;
 	}
 
 	//
@@ -811,7 +808,7 @@ void xhci_initialise_port(int portno)
 		res = xhci_request_device_address(deviceid,infostructures,1);
 		if(res!=1)
 		{
-			return;
+			return 0;
 		}
 	}
 
@@ -825,12 +822,19 @@ void xhci_initialise_port(int portno)
 	xhci_request_ring_test(ringinfo,deviceid);
 
 	USBStandardDeviceDescriptor* devdesc = (USBStandardDeviceDescriptor*) xhci_request_device_descriptor(ringinfo,deviceid);
+	if(!devdesc){
+		return 0;
+	}
+
 	if(portspeed==XHCI_SPEED_FULL&&devdesc->bMaxPacketSize0!=64){
 		printk("We have a fullspeed here! different maxpackagesize: %d \n",devdesc->bMaxPacketSize0);
-		return;
+		return 0;
 	}
 
 	uint8_t* cinforaw = (uint8_t*)xhci_request_device_configuration(ringinfo,deviceid);
+	if(!cinforaw){
+		return 0;
+	}
 	usb_interface_descriptor* desc = (usb_interface_descriptor*)(((unsigned long)cinforaw)+sizeof(usb_config_descriptor));
 
 	USBSocket *socket = (USBSocket*) calloc(0x1000);
@@ -839,7 +843,18 @@ void xhci_initialise_port(int portno)
 	socket->descriptors = cinforaw;
 	socket->usbver = 3;
 
-	install_new_usb_device(desc,socket);
+	return install_new_usb_device(desc,socket);
+}
+
+void xhci_check_ports()
+{
+	for(int i = 0 ; i <= HCSPARAMS1_MaxPorts ;i++)
+	{
+		if( (PORTSC(i) & 1) && xhci_initialise_port(i) )
+		{
+			return ;
+		}
+	}
 }
 
 void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
@@ -938,15 +953,9 @@ void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 
 	USBCMD = USBCMD | USBCMD_MASK_RS;
 
-	sleep(5);
+	sleep(10);
 
-	for(int i = 0 ; i < HCSPARAMS1_MaxPorts ;i++)
-	{
-		if(PORTSC(i) & 1)
-		{
-			xhci_initialise_port(i);
-		}
-	}
+	xhci_check_ports();
 }
 
 

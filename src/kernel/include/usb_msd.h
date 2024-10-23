@@ -17,4 +17,4 @@ typedef struct {
     uint8_t data[16];
 } __attribute__ ((packed)) CommandBlockWrapper;
 
-void install_usb_msd(usb_interface_descriptor* desc,void *data);
+uint8_t install_usb_msd(usb_interface_descriptor* desc,void *data);

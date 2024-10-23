@@ -9,6 +9,7 @@
 #include "include/filesystem.h"
 #include "include/stapelbridge.h"
 #include "include/ps2_keyboard.h"
+#include "include/serial.h"
 
 /**
  * @brief Bootinfo structure given by the program that booted us
@@ -49,6 +50,7 @@ void kernel_main(BootInfo* bi){
   initialise_memory (bi->memory_info);
   initialise_paging();
   initialise_timer();
+  initialise_serial();
   clearFatDetection();
   initialise_pci();
   initialise_ps2_keyboard();

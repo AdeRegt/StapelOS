@@ -3,6 +3,7 @@
 
 #define USB_IF_WIRELESS 0xE0
 #define USB_IF_MSD 0x08
+#define USB_IF_HUB 0x09
 #define USB_IF_HID 0x03
 
 #define USB2_DESCRIPTOR_TYPE_POWER  8
@@ -107,7 +108,7 @@ int usb_send_bulk(void* info,void* buffer,int size);
 int usb_recieve_bulk(void* info,void* buffer,int size);
 uint8_t usb_register_bulk_endpoints(void* info,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2);
 uint8_t usb_request_set_config(void *device,uint8_t configid);
-void install_new_usb_device(usb_interface_descriptor* desc,void *info);
+uint8_t install_new_usb_device(usb_interface_descriptor* desc,void *info);
 USBCommand *usb_generate_command_structure(uint8_t request, uint8_t dir, uint8_t type, uint8_t recieve, uint16_t windex,uint16_t wlength, uint16_t wvalue);
 void usb_dump_descriptor(usb_interface_descriptor* desc);
 void usb_dump_device_descriptor(USBStandardDeviceDescriptor* desc);

@@ -7,6 +7,7 @@
 #include "../include/usb_ehci.h"
 
 void usb_dump_descriptor(usb_interface_descriptor* desc){
+	printk("<c:%x;s:%x;p:%x> ",desc->bInterfaceClass,desc->bInterfaceSubClass,desc->bInterfaceProtocol);
 	switch(desc->bInterfaceClass){
 	case 0x00: printk("Use class information in the Interface Descriptors");break;
 	case 0x01: printk("Audio");break;
@@ -16,7 +17,14 @@ void usb_dump_descriptor(usb_interface_descriptor* desc){
 	case 0x06: printk("Image");break;
 	case 0x07: printk("Printer");break;
 	case USB_IF_MSD: printk("Mass Storage");break;
-	case 0x09: printk("Hub");break;
+	case USB_IF_HUB: 
+		printk("Hub ");
+		switch(desc->bInterfaceProtocol){
+			case 0x00: printk("Full speed Hub");break;
+			case 0x01: printk("Hi-speed hub with single TT");break;
+			case 0x02: printk("Hi-speed hub with multiple TTs");break;
+		}
+		break;
 	case 0x0A: printk("CDC-Data");break;
 	case 0x0B: printk("Smart Card");break;
 	case 0x0D: printk("Content Security");break;
@@ -166,14 +174,15 @@ uint8_t usb_request_set_config(void *info,uint8_t configid){
 	}
 }
 
-void install_new_usb_device(usb_interface_descriptor* desc,void *info){
+uint8_t install_new_usb_device(usb_interface_descriptor* desc,void *info){
 	if(desc->bInterfaceClass==USB_IF_MSD){
-		install_usb_msd(desc,info);
+		return install_usb_msd(desc,info);
 	}else if(desc->bInterfaceClass==USB_IF_HID){
-		install_usb_hid(desc,info);
+		return install_usb_hid(desc,info);
 	}else{
 		usb_dump_descriptor(desc);
 	}
+	return 0;
 }
 
 USBCommand *usb_generate_command_structure(uint8_t request, uint8_t dir, uint8_t type, uint8_t recieve, uint16_t windex,uint16_t wlength, uint16_t wvalue)

@@ -35,9 +35,15 @@ void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter,void* out
     ep->data[7] = (uint8_t) ((counter >> 8) & 0xFF);
     ep->data[8] = (uint8_t) ((counter) & 0xFF);
 
-    usb_send_bulk (data, ep, sizeof(CommandBlockWrapper));
+    int pi = usb_send_bulk (data, ep, sizeof(CommandBlockWrapper));
+	if(pi!=1){
+		return 0;
+	}
 
-	usb_recieve_bulk(data,out,sizeof(CommandStatusWrapper) + (512*counter));
+	pi = usb_recieve_bulk(data,out,sizeof(CommandStatusWrapper) + (512*counter));
+	if(pi!=1){
+		return 0;
+	}
 
 	CommandStatusWrapper *csw = (CommandStatusWrapper*) (out + (512*counter));
 	if(csw->signature!=0x53425355){
@@ -54,30 +60,30 @@ void *read_sectors(uint64_t sector, uint32_t counter,void* out){
 	return usb_stick_one_read (rsb,sector,counter,out);
 }
 
-void install_usb_msd(usb_interface_descriptor* desc,void *data){
+uint8_t install_usb_msd(usb_interface_descriptor* desc,void *data){
 	// only support MSD
 	if(desc->bInterfaceClass != 0x08)
 	{
-		return;
+		return 0;
 	}
 
 	// check number of endpoins
 	if(desc->bNumEndpoints != 2)
 	{
 		printk("Number of endpoints is not 2!\n");
-		return;
+		return 0;
 	}
 
 	if(desc->bInterfaceSubClass != 6)
 	{
 		printk("Interface Sub Class is not 6!\n");
-		return;
+		return 0;
 	}
 
 	if(desc->bInterfaceProtocol != 0x50)
 	{
 		printk("Interface Protocol is not 0x50!\n");
-		return;
+		return 0;
 	}
 
 	usb_endpoint *ep1 = getUSBEndpoint(data,0);
@@ -89,11 +95,12 @@ void install_usb_msd(usb_interface_descriptor* desc,void *data){
 	uint8_t res = usb_register_bulk_endpoints(data,ep1,ep2,localoutring,localinring);
 	if(res!=1)
 	{
-		return;
+		return 0;
 	}
 
 	usb_request_set_config(data,1);
 
 	rsb = data;
 	detect_fat();
+	return 1;
 }
