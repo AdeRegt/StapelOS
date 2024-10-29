@@ -803,13 +803,8 @@ uint8_t xhci_initialise_port(int portno)
 	((uint32_t*)dcbaap_items)[(deviceid*2)+1] = 0;
 
 	uint8_t res = xhci_request_device_address(deviceid,infostructures,0);
-	if(res!=1)
-	{
-		res = xhci_request_device_address(deviceid,infostructures,1);
-		if(res!=1)
-		{
-			return 0;
-		}
+	if(res!=1){
+		return 0;
 	}
 
 	USBRing *ringinfo = (USBRing*) calloc(0x1000);
@@ -819,7 +814,10 @@ uint8_t xhci_initialise_port(int portno)
 	ringinfo->doorbelid = 1;
 	ringinfo->deviceaddr = deviceid;
 
-	xhci_request_ring_test(ringinfo,deviceid);
+	res = xhci_request_ring_test(ringinfo,deviceid);
+	if(res!=1){
+		return 0;
+	}
 
 	USBStandardDeviceDescriptor* devdesc = (USBStandardDeviceDescriptor*) xhci_request_device_descriptor(ringinfo,deviceid);
 	if(!devdesc){

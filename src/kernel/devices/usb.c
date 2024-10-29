@@ -7,7 +7,6 @@
 #include "../include/usb_ehci.h"
 
 void usb_dump_descriptor(usb_interface_descriptor* desc){
-	printk("<c:%x;s:%x;p:%x> ",desc->bInterfaceClass,desc->bInterfaceSubClass,desc->bInterfaceProtocol);
 	switch(desc->bInterfaceClass){
 	case 0x00: printk("Use class information in the Interface Descriptors");break;
 	case 0x01: printk("Audio");break;
@@ -60,7 +59,7 @@ void usb_dump_descriptor(usb_interface_descriptor* desc){
 	case 0xEF: printk("Miscellaneous");break;
 	case 0xFE: printk("Application Specific");break;
 	case 0xFF: printk("Vendor specific");break;
-	default: printk("Unknown");break;
+	default: printk("<c:%x;s:%x;p:%x> ",desc->bInterfaceClass,desc->bInterfaceSubClass,desc->bInterfaceProtocol);printk("Unknown");break;
 	}
 	printk("\n");
 }
@@ -175,12 +174,11 @@ uint8_t usb_request_set_config(void *info,uint8_t configid){
 }
 
 uint8_t install_new_usb_device(usb_interface_descriptor* desc,void *info){
+	usb_dump_descriptor(desc);
 	if(desc->bInterfaceClass==USB_IF_MSD){
 		return install_usb_msd(desc,info);
 	}else if(desc->bInterfaceClass==USB_IF_HID){
 		return install_usb_hid(desc,info);
-	}else{
-		usb_dump_descriptor(desc);
 	}
 	return 0;
 }

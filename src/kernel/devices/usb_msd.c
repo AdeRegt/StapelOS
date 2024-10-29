@@ -86,19 +86,23 @@ uint8_t install_usb_msd(usb_interface_descriptor* desc,void *data){
 		return 0;
 	}
 
+	uint8_t res = usb_request_set_config(data,1);
+	if(res!=1)
+	{
+		return 0;
+	}
+
 	usb_endpoint *ep1 = getUSBEndpoint(data,0);
   	usb_endpoint *ep2 = getUSBEndpoint(data,1);
 
 	void *localoutring = calloc(0x1000);
 	void *localinring = calloc(0x1000);
 
-	uint8_t res = usb_register_bulk_endpoints(data,ep1,ep2,localoutring,localinring);
+	res = usb_register_bulk_endpoints(data,ep1,ep2,localoutring,localinring);
 	if(res!=1)
 	{
 		return 0;
 	}
-
-	usb_request_set_config(data,1);
 
 	rsb = data;
 	detect_fat();
