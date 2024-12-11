@@ -69,9 +69,23 @@ void setRawInterrupt(int offset,void *fun){
   int_PageFault->selector = GDT_CODE_SEGMENT;
 }
 
+void disable_pic(){
+  outportb(PIC1_DATA,0xFF);
+  outportb(PIC2_DATA,0xFF);
+}
+
+void interrupts_disable(){
+  asm volatile ("cli");
+}
+
+void interrupts_enable(){
+  asm volatile ("sti");
+}
+
 void initialise_interrupts(){
   uint8_t oldpic1 = inportb(PIC1_DATA);
   uint8_t oldpic2 = inportb(PIC2_DATA);
+
   outportb(PIC1, 0x11);
   outportb(PIC2, 0x11);
   outportb(PIC1_DATA, PIC_OFFSET);
@@ -96,6 +110,6 @@ void initialise_interrupts(){
     setRawInterrupt(i,GeneralFault_Handler);
   }
   asm volatile ("lidt %0" : : "m"(idtr));
-  asm volatile ("sti");
+  interrupts_enable();
 }
 

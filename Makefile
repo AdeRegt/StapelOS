@@ -9,6 +9,7 @@ install:
 	grub-mkrescue -o ./media/efi_grub_cdrom.iso ./bin
 	xorrisofs -o ./media/efi_custom_cdrom.iso -eltorito-platform efi --efi-boot efi/boot/bootx64.efi ./bin
 	if [ -d /media/$(USER)/TEST ]; then cp -r ./bin/* /media/$(USER)/TEST ; fi
+	if [ -d /media/$(USER)/STAPELOS ]; then cp -r ./bin/* /media/$(USER)/STAPELOS ; fi
 
 # Builder uses this target to run your application.
 run:

@@ -11,6 +11,8 @@
         "timer.h": "c",
         "algorithm": "c",
         "string.h": "c",
-        "cpu.h": "c"
+        "cpu.h": "c",
+        "apci.h": "c",
+        "cpuid.h": "c"
     }
 }

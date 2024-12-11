@@ -28,3 +28,6 @@ void cpuid(int code, uint32_t *a, uint32_t *d);
 int cpuid_string(int code, uint32_t where[4]) ;
 uint32_t get_cpu_info();
 uint32_t get_cpu_feature_information();
+uint8_t cpu_has_model_specific_registers();
+void cpu_get_specific_registers(uint32_t msr, uint32_t *lo, uint32_t *hi);
+void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi);

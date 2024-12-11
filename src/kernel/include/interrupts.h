@@ -59,3 +59,6 @@ struct stackframe {
 void initialise_interrupts();
 void setInterrupt(int offset,void *fun);
 void IRQ_clear_mask(unsigned char IRQline);
+void disable_pic();
+void interrupts_disable();
+void interrupts_enable();

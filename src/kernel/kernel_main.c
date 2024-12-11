@@ -10,6 +10,9 @@
 #include "include/stapelbridge.h"
 #include "include/ps2_keyboard.h"
 #include "include/serial.h"
+#include "include/cpu.h"
+#include "include/apic.h"
+#include "include/gdt.h"
 
 /**
  * @brief Bootinfo structure given by the program that booted us
@@ -46,7 +49,12 @@ void kernel_main(BootInfo* bi){
   initialise_graphics_driver(bi->graphics_info);
   printk("StapelOS64 bit\n");
   printk("Loading essentials...\n");
+  initialise_gdt();
   initialise_interrupts();
+  if(check_apic()){
+	disable_pic();
+	initialise_apic();
+  }
   initialise_memory (bi->memory_info);
   initialise_paging();
   initialise_timer();

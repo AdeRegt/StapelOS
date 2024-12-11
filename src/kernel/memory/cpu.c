@@ -173,6 +173,23 @@ uint32_t get_cpu_feature_information(){
   return infoslot;
 }
 
+uint8_t cpu_has_model_specific_registers(){
+    static uint32_t a, d; // eax, edx
+    cpuid(1, &a, &d);
+    return d & (1 << 5);
+}
+
+
+void cpu_get_specific_registers(uint32_t msr, uint32_t *lo, uint32_t *hi)
+{
+   asm volatile("rdmsr" : "=a"(*lo), "=d"(*hi) : "c"(msr));
+}
+
+void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi)
+{
+   asm volatile("wrmsr" : : "a"(lo), "d"(hi), "c"(msr));
+}
+
 void __stack_chk_fail(){
     for(;;);
 }
