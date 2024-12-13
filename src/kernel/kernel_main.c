@@ -55,7 +55,7 @@ void kernel_main(BootInfo* bi){
 	disable_pic();
 	initialise_apic();
   }
-  initialise_memory (bi->memory_info);
+  initialise_memory(bi->memory_info);
   initialise_paging();
   initialise_timer();
   initialise_serial();

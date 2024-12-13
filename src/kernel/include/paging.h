@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #define PAGE_GAP_SIZE 0x200000
+#define PAGE_LOCATOR 0xF00000
 
 typedef struct{
     uint8_t present: 1;

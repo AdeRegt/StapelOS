@@ -4,7 +4,7 @@
 
 PageTable *master_page_table;
 
-void *memreg = (void*)0xF00000;
+void *memreg = (void*)PAGE_LOCATOR;
 
 PageLookupResult page_map_indexer(uint64_t virtual_address){
     PageLookupResult plr;
@@ -69,4 +69,5 @@ void initialise_paging(){
       define_linear_memory_block((void*)(valve*PAGE_GAP_SIZE));
   }
   asm volatile ("mov %0, %%cr3" : : "r" (master_page_table));
+  markMemoryRegionUsed((void*)PAGE_LOCATOR,memreg);
 }

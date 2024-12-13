@@ -1,7 +1,9 @@
 #pragma once
 #include <stdint.h>
 
-#define MAX_SIZE_MEMORYTABLE 500
+#define MAX_SIZE_MEMORYTABLE 0x5000
+#define MEMORY_TYPE_FREE 7
+#define MEMORY_PAGE_SIZE 0x1000
 
 typedef struct {
     uint32_t                          Type;           // Field size is 32 bits followed by 32 bit pad
@@ -18,14 +20,9 @@ typedef struct{
 	uint64_t mMapDescSize;
 }MemoryInfo;
 
-typedef struct{
-  uint64_t start;
-  uint64_t end;
-  uint8_t valid;
-} MemoryBlockDescriptor;
-
 void initialise_memory(MemoryInfo* mem);
-void *memset(void *str, int c, uint64_t n);
+void markMemoryRegionUsed(void* from,void* to);
+void *memset(void *s, char val, uint64_t count);
 void* malloc(uint64_t requested_size);
 void* calloc(uint64_t requested_size);
 void *memclear(void *str,uint64_t n);

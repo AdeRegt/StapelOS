@@ -13,6 +13,7 @@
         "string.h": "c",
         "cpu.h": "c",
         "apci.h": "c",
-        "cpuid.h": "c"
+        "cpuid.h": "c",
+        "paging.h": "c"
     }
 }
