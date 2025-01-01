@@ -14,6 +14,8 @@
         "cpu.h": "c",
         "apci.h": "c",
         "cpuid.h": "c",
-        "paging.h": "c"
+        "paging.h": "c",
+        "pic.h": "c",
+        "apic.h": "c"
     }
 }

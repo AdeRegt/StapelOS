@@ -11,7 +11,6 @@
 #include "include/ps2_keyboard.h"
 #include "include/serial.h"
 #include "include/cpu.h"
-#include "include/apic.h"
 #include "include/gdt.h"
 
 /**
@@ -50,13 +49,9 @@ void kernel_main(BootInfo* bi){
   printk("StapelOS64 bit\n");
   printk("Loading essentials...\n");
   initialise_gdt();
-  initialise_interrupts();
-  if(check_apic()){
-	disable_pic();
-	initialise_apic();
-  }
   initialise_memory(bi->memory_info);
   initialise_paging();
+  initialise_interrupts();
   initialise_timer();
   initialise_serial();
   clearFatDetection();
