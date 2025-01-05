@@ -30,3 +30,4 @@ typedef struct{
 }PageLookupResult;
 
 void initialise_paging();
+void define_linear_memory_block(void *address);

@@ -1,6 +1,7 @@
 #include "../include/apic.h"
 #include "../include/cpu.h"
 #include "../include/string.h"
+#include "../include/paging.h"
 
 void* apicbase;
 
@@ -136,19 +137,19 @@ void initialise_apic(){
     //
     // According to osdev.org, the local APIC is enabled at boot time, we just need to find it...
     // use: https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-3a-part-1-manual.pdf
-    
     apicbase = get_apic_base();
+    define_linear_memory_block(apicbase);
     if(((uint64_t)apicbase)!=EXPECTED_APIC_BASE){
         return printk("Unexpected APIC base! Expected %x found %x \n",EXPECTED_APIC_BASE,apicbase);
     }
     set_lvt_cmci_register(0x10,0b101,0,0);
-    set_lvt_timer_register(0x20,0,0,1);
+    set_lvt_timer_register(0x21,0,0,1);
     set_lvt_termal_monitor_register(0x12,0b101,0,0);
     set_lvt_performance_counter_register(0x13,0b101,0,0);
     set_lvt_lint0_register(0x14,0b101,0,0,0,0,0);
     set_lvt_lint1_register(0x15,0b101,0,0,0,0,0);
     set_lvt_error_register(0x16,0,0);
     write_apic_register(0x280,0xFF);
-    apic_eoi();
     set_apic_base(get_apic_base());
+    set_apic_timer_values(0x00200000);
 }

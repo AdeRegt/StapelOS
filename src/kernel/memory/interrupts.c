@@ -191,18 +191,15 @@ void interrupt_set_offset(IDTDescEntry* int_PageFault,uint64_t offset){
   int_PageFault->offset2 = (uint32_t)((offset & 0xffffffff00000000) >> 32);
 }
 
-void setInterrupt(int offset,void *fun){
-  IDTDescEntry* int_PageFault = (IDTDescEntry*)(idtr.Offset + ((offset+INT_OFFSET) * sizeof(IDTDescEntry)));
-  interrupt_set_offset(int_PageFault,(uint64_t)fun);
-  int_PageFault->type_attr = IDT_TA_InterruptGate;
-  int_PageFault->selector = GDT_CODE_SEGMENT;
-}
-
 void setRawInterrupt(int offset,void *fun){
   IDTDescEntry* int_PageFault = (IDTDescEntry*)(idtr.Offset + ((offset) * sizeof(IDTDescEntry)));
   interrupt_set_offset(int_PageFault,(uint64_t)fun);
   int_PageFault->type_attr = IDT_TA_TrapGate;
   int_PageFault->selector = GDT_CODE_SEGMENT;
+}
+
+void setInterrupt(int offset,void *fun){
+  setRawInterrupt(INT_OFFSET+offset+(check_apic()?1:0),fun);
 }
 
 void interrupts_disable(){
@@ -214,7 +211,7 @@ void interrupts_enable(){
 }
 
 void initialise_interrupts(){
-  
+
   //
   // if we have APIC, use APIC, otherwise use PIC
   if(check_apic()){
@@ -260,11 +257,10 @@ void initialise_interrupts(){
   setRawInterrupt(0x1D,MasterInteruptHandler1d);
   setRawInterrupt(0x1E,MasterInteruptHandler1e);
   setRawInterrupt(0x1F,MasterInteruptHandler1f);
-  for(uint8_t z = 0x20 ; z < 0xFF ; z++){
+  for(int z = 0x20 ; z < 0xFF ; z++){
     setRawInterrupt(z,MasterInteruptHandler1f);
   }
   asm volatile ("lidt %0" : : "m"(idtr));
   interrupts_enable();
-  interrupt_eoi();
 }
 
