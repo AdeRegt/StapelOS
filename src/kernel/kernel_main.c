@@ -51,6 +51,7 @@ void kernel_main(BootInfo* bi){
   initialise_gdt();
   initialise_memory(bi->memory_info);
   initialise_paging();
+  define_linear_memory_block(bi->graphics_info->BaseAddress);
   initialise_interrupts();
   initialise_timer();
   initialise_serial();
