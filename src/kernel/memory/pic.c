@@ -1,5 +1,6 @@
 #include "../include/pic.h"
 #include "../include/cpu.h"
+#include "../include/string.h"
 
 void reset_pic(uint8_t oldpic1,uint8_t oldpic2){
   outportb(PIC1, 0x11);
@@ -27,6 +28,14 @@ void pic_eoi(){
   outportb(0x20,0x20);
 }
 
+uint8_t pic_get_interrupt_number(){
+    return 0;
+}
+
 void disable_pic(){
-  reset_pic(0xFF,0xFF);
+  uint8_t oldpic1 = inportb(PIC1_DATA);
+  uint8_t oldpic2 = inportb(PIC2_DATA);
+  if(!(oldpic1==0xFF&&oldpic2==0xFF)){
+    reset_pic(0xFF,0xFF);
+  }
 }

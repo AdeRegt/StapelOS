@@ -264,7 +264,11 @@ void xhci_stop(){
 void xhci_reset(){
 	USBCMD = USBCMD | USBCMD_MASK_HCRST;
 	sleep(10);
-	while(USBCMD_HCRST);
+	int i = 10;
+	while(USBCMD_HCRST&&i){
+		i--;
+		sleep(2);
+	}
 }
 
 void xhci_wait_for_controller_is_ready(){
@@ -868,33 +872,37 @@ void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 	//
 	// check the capabilities to stop the system
 	uint32_t capapointer = (((uint32_t*)(base_xhci_address+0x10))[0]>>16)<<2;
-	void *cappointer = capapointer + base_xhci_address;
-	int captimeout = 100;
-	while(1)
-	{
+	if(capapointer){
+		void *cappointer = capapointer + base_xhci_address;
+		int captimeout = 100;
+		int i = 10;
+		while(i)
+		{
+			i--;
 			volatile uint32_t reg = ((volatile uint32_t*)cappointer)[0];
 			uint8_t capid = reg & 0xFF;
 			uint8_t capoffset = (reg>>8) & 0xFF;
 			if(capid==0)
 			{
-					break;
+				break;
 			}
 			if( capid==1 && reg & 0x10000 )
 			{
-					((volatile uint32_t*)cappointer)[0] |= 0x1000000;
-					sleep(1);
-					captimeout--;
-					if(captimeout==0)
-					{
-							break;
-					}
-					continue;
+				((volatile uint32_t*)cappointer)[0] |= 0x1000000;
+				sleep(1);
+				captimeout--;
+				if(captimeout==0)
+				{
+					break;
+				}
+				continue;
 			}
 			if(capoffset==0)
 			{
-					break;
+				break;
 			}
 			cappointer += capoffset * sizeof(uint32_t);
+		}
 	}
 
 	// stop xhci if it is still running
@@ -921,7 +929,7 @@ void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 	((uint32_t*)dcbaap_items)[0] = (uint32_t)(uint64_t)scratchpad_items;
 	((uint32_t*)dcbaap_items)[1] = (uint32_t)(uint64_t)0;
 
-	for(int i = 0 ; i < 2 ; i++)
+	for(int i = 0 ; i < 15 ; i++)
 	{
 		((uint32_t*)scratchpad_items)[ 0 + ( i * 2 ) ] = (uint32_t)(uint64_t)calloc(0x1000);
 		((uint32_t*)scratchpad_items)[ 1 + ( i * 2 ) ] = (uint32_t)(uint64_t)0;

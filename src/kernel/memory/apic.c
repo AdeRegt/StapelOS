@@ -129,8 +129,22 @@ void apic_eoi(){
 void set_apic_timer_values(uint32_t vals){
     if(vals){
         write_apic_register(0x380,vals);
-        write_apic_register(0x390,vals);
     }
+}
+
+void debug_apic(){
+    printk("cmci: %x , timer: %x , termal: %x , performance: %x , lint0: %x , lint1: %x , error: %x , 0x280: %x \n",read_apic_register(0x2F0),read_apic_register(0x320),read_apic_register(0x330),read_apic_register(0x340),read_apic_register(0x350),read_apic_register(0x360),read_apic_register(0x370),read_apic_register(0x280));
+}
+
+uint8_t apic_get_interrupt_number(){
+    for(int u = 0 ; u < 8 ; u++){
+        for(int i = 0 ; i < 32 ; i++){
+            if(read_apic_register(0x100 + (u*0x10)) & (1<<i)){
+                return (u*32)+i;
+            }
+        }
+    }
+    return 0;
 }
 
 void initialise_apic(){
@@ -139,17 +153,24 @@ void initialise_apic(){
     // use: https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-3a-part-1-manual.pdf
     apicbase = get_apic_base();
     define_linear_memory_block(apicbase);
+    // debug_apic();
     if(((uint64_t)apicbase)!=EXPECTED_APIC_BASE){
-        return printk("Unexpected APIC base! Expected %x found %x \n",EXPECTED_APIC_BASE,apicbase);
+        printk("Unexpected APIC base! Expected %x found %x \n",EXPECTED_APIC_BASE,apicbase);
+        return ;
     }
+    apic_get_interrupt_number();
     set_lvt_cmci_register(0x10,0b101,0,0);
-    set_lvt_timer_register(0x21,0,0,1);
+    set_lvt_timer_register(0x21,0,0,1);//1
     set_lvt_termal_monitor_register(0x12,0b101,0,0);
     set_lvt_performance_counter_register(0x13,0b101,0,0);
     set_lvt_lint0_register(0x14,0b101,0,0,0,0,0);
     set_lvt_lint1_register(0x15,0b101,0,0,0,0,0);
     set_lvt_error_register(0x16,0,0);
+    if(apic_is_enabled()==0){
+        printk("apic is not enabled yet?!\n");
+        set_apic_base(get_apic_base());
+    }
     write_apic_register(0x280,0xFF);
-    set_apic_base(get_apic_base());
-    set_apic_timer_values(0x00200000);
+    set_apic_timer_values(0x200000);
+    // debug_apic();
 }

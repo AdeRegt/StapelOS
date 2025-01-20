@@ -1,3 +1,6 @@
+#pragma once
+#include <stdint.h>
+
 #define PIC1		0x20		/* IO base address for master PIC */
 #define PIC2		0xA0		/* IO base address for slave PIC */
 #define PIC1_COMMAND	PIC1
@@ -22,3 +25,4 @@
 void disable_pic();
 void initialise_pic();
 void pic_eoi();
+uint8_t pic_get_interrupt_number();

@@ -4,6 +4,7 @@
 #include "../include/string.h"
 #include "../include/pic.h"
 #include "../include/apic.h"
+#include "../include/timer.h"
 
 static IDTR idtr;
 __attribute__ ((aligned(0x10))) static IDTDescEntry idt[256];
@@ -13,6 +14,14 @@ void interrupt_eoi(){
     apic_eoi();
   }else{
     pic_eoi();
+  }
+}
+
+uint8_t interrupt_get_int_number(){
+  if(check_apic()){
+    return apic_get_interrupt_number();
+  }else{
+    return pic_get_interrupt_number();
   }
 }
 
@@ -182,6 +191,7 @@ __attribute__((interrupt)) void GeneralFault_Handler(interrupt_frame* frame){
 }
 
 __attribute__((interrupt)) void NakedInterruptHandler(interrupt_frame* frame){
+  printk("Interrupt %x fired!\n",interrupt_get_int_number());
 	interrupt_eoi();
 }
 
@@ -258,9 +268,14 @@ void initialise_interrupts(){
   setRawInterrupt(0x1E,MasterInteruptHandler1e);
   setRawInterrupt(0x1F,MasterInteruptHandler1f);
   for(int z = 0x20 ; z < 0xFF ; z++){
-    setRawInterrupt(z,MasterInteruptHandler1f);
+    setRawInterrupt(z,NakedInterruptHandler);
   }
   asm volatile ("lidt %0" : : "m"(idtr));
+
   interrupts_enable();
+  interrupt_eoi();
+  if(check_apic()){
+    set_apic_timer_values(PIT_TIMER_SLEEP_APIC);
+  }
 }
 

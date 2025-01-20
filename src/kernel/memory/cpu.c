@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <cpuid.h>
+#include "../include/string.h"
 
 void outportb(uint16_t port, uint8_t value){
     asm volatile ("outb %0, %1" : : "a"(value), "Nd"(port));
@@ -191,9 +192,11 @@ void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi)
 }
 
 void __stack_chk_fail(){
+    printk("stack check fail!\n");
     for(;;);
 }
 
 void __stack_chk_fail_local(){
+    printk("stack check fail!\n");
     for(;;);
 }
