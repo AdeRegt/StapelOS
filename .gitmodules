@@ -4,3 +4,6 @@
 [submodule "src/bootloader/efi"]
 	path = src/bootloader/efi
 	url = https://github.com/AdeRegt/EFIBootloader.git
+[submodule "src/bootloader/grub"]
+	path = src/bootloader/grub
+	url = https://github.com/AdeRegt/Trampoline.git
