@@ -1,6 +1,3 @@
-[submodule "src/bootloader/efi/origin"]
-	path = src/bootloader/efi/origin
-	url = https://github.com/ncroxon/gnu-efi.git
 [submodule "src/interpeter"]
 	path = src/interpeter
 	url = git@github.com:AdeRegt/Stapel.git
