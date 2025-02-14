@@ -16,6 +16,9 @@
         "cpuid.h": "c",
         "paging.h": "c",
         "pic.h": "c",
-        "apic.h": "c"
+        "apic.h": "c",
+        "gdt.h": "c",
+        "vga.h": "c",
+        "bmp.h": "c"
     }
 }
