@@ -1,3 +1,6 @@
 [submodule "src/interpeter"]
 	path = src/interpeter
 	url = git@github.com:AdeRegt/Stapel.git
+[submodule "src/bootloader/efi"]
+	path = src/bootloader/efi
+	url = https://github.com/AdeRegt/EFIBootloader.git
