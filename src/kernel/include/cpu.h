@@ -21,6 +21,7 @@ void setCR4(uint64_t cr);
 
 void cli();
 void sti();
+void hlt();
 
 int get_model(void);
 int check_apic(void);

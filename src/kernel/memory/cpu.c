@@ -126,6 +126,10 @@ void setCR4(uint64_t cr){
     );
 }
 
+void hlt(){
+    __asm__ __volatile__ ("hlt");
+}
+
 void cli(){
     __asm__ __volatile__ ("cli");
 }

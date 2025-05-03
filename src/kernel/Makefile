@@ -1,7 +1,7 @@
 all: build_asm_files build_c_files
 
 build_asm_files:
-	nasm memory/gdt_ep.asm -f elf64 -o memory/gdt_ep.bin
+	nasm memory/gdt_ep.asm -f elf64 -Werror -o memory/gdt_ep.bin
 
 CSOURCES := $(wildcard */*.c */*/*.c *.c)
 build_c_files: $(CSOURCES)

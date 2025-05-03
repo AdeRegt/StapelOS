@@ -27,3 +27,5 @@ void* malloc(uint64_t requested_size);
 void* calloc(uint64_t requested_size);
 void *memclear(void *str,uint64_t n);
 void* free(void* a);
+void *memcpy(void * restrict s1, const void * restrict s2, uint64_t n);
+void* malloc_whole_page();

@@ -12,6 +12,8 @@
 #include "include/serial.h"
 #include "include/cpu.h"
 #include "include/gdt.h"
+#include "include/elf.h"
+#include "include/syscall.h"
 
 /**
  * @brief Bootinfo structure given by the program that booted us
@@ -58,6 +60,7 @@ void kernel_main(BootInfo* bi){
   clearFatDetection();
   initialise_pci();
   initialise_ps2_keyboard();
+  initialise_syscall();
   printk("Ready.\n");
   if(fat_filesystem_is_enabled()){
 	printk("Filesystem is enabled!\n");
@@ -70,5 +73,6 @@ void kernel_main(BootInfo* bi){
 	}
   }
   printk("System is finished\n");
+  load_test_executable();
   for(;;);
 }

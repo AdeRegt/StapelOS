@@ -160,7 +160,7 @@ void initialise_apic(){
     }
     apic_get_interrupt_number();
     set_lvt_cmci_register(0x10,0b101,0,0);
-    set_lvt_timer_register(0x21,0,0,1);//1
+    set_lvt_timer_register(0x21,0,0,1);
     set_lvt_termal_monitor_register(0x12,0b101,0,0);
     set_lvt_performance_counter_register(0x13,0b101,0,0);
     set_lvt_lint0_register(0x14,0b101,0,0,0,0,0);

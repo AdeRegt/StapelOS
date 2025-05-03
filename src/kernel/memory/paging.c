@@ -63,6 +63,10 @@ void define_linear_memory_block(void *address){
   map_memory(master_page_table,address,address);
 }
 
+void define_seperate_memory_block(void *virtualmemory, void *physicalmemory){
+  map_memory(master_page_table,virtualmemory,physicalmemory);
+}
+
 void initialise_paging(){
   master_page_table = (PageTable*) calloc(sizeof(PageTable));
   for(uint64_t valve = 0 ; valve < (0xFFFFF000/PAGE_GAP_SIZE) ; valve++){

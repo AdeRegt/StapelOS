@@ -19,6 +19,8 @@
         "apic.h": "c",
         "gdt.h": "c",
         "vga.h": "c",
-        "bmp.h": "c"
+        "bmp.h": "c",
+        "elf.h": "c",
+        "random": "c"
     }
 }

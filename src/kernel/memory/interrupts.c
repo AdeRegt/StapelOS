@@ -25,78 +25,85 @@ uint8_t interrupt_get_int_number(){
   }
 }
 
+static void showInterruptRegis(interrupt_frame* frame,unsigned long int error){
+  printk("cs: %x , flags:%x , ip:%x , sp:%x , ss:%x , error:%x \n",frame->cs,frame->flags,frame->ip,frame->sp,frame->ss,error);
+}
+
 __attribute__((interrupt)) void MasterInteruptHandler00(interrupt_frame* frame){
-  printk("Interrupt 00 fired!\n");
+  printk("Interrupt 00 Division Error fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler01(interrupt_frame* frame){
-  printk("Interrupt 01 fired!\n");
+  printk("Interrupt 01 Debug fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler02(interrupt_frame* frame){
-  printk("Interrupt 02 fired!\n");
+  printk("Interrupt 02 Non-maskable Interrupt fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler03(interrupt_frame* frame){
-  printk("Interrupt 03 fired!\n");
+  printk("Interrupt 03 Breakpoint fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler04(interrupt_frame* frame){
-  printk("Interrupt 04 fired!\n");
+  printk("Interrupt 04 Overflow fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler05(interrupt_frame* frame){
-  printk("Interrupt 05 fired!\n");
+  printk("Interrupt 05 Bound Range Exceeded fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler06(interrupt_frame* frame){
-  printk("Interrupt 06 fired!\n");
-	asm volatile("cli\nhlt");
+  printk("Interrupt 06 Invalid Opcode fired!\n");
+  showInterruptRegis(frame,0);
+  asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler07(interrupt_frame* frame){
-  printk("Interrupt 07 fired!\n");
+  printk("Interrupt 07 Device Not Available fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler08(interrupt_frame* frame){
-  printk("Interrupt 08 fired!\n");
+  printk("Interrupt 08 Double Fault fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler09(interrupt_frame* frame){
-  printk("Interrupt 09 fired!\n");
+  printk("Interrupt 09 Coprocessor Segment Overrun fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler0a(interrupt_frame* frame){
-  printk("Interrupt 0a fired!\n");
+  printk("Interrupt 0a Invalid TSS fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler0b(interrupt_frame* frame){
-  printk("Interrupt 0b fired!\n");
+  printk("Interrupt 0b Segment Not Present fired!\n");
 	asm volatile("cli\nhlt");
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler0c(interrupt_frame* frame){
-  printk("Interrupt 0c fired!\n");
+  printk("Interrupt 0c Stack-Segment Fault fired!\n");
 	asm volatile("cli\nhlt");
 }
 
-__attribute__((interrupt)) void MasterInteruptHandler0d(interrupt_frame* frame){
-  printk("Interrupt 0d fired!\n");
+__attribute__((interrupt)) void MasterInteruptHandler0d(interrupt_frame* frame,unsigned long int error){
+  printk("Interrupt 0d General Protection Fault fired!\n");
+  showInterruptRegis(frame,error);
 	asm volatile("cli\nhlt");
 }
 
-__attribute__((interrupt)) void MasterInteruptHandler0e(interrupt_frame* frame){
-  printk("Interrupt 0e fired!\n");
+__attribute__((interrupt)) void MasterInteruptHandler0e(interrupt_frame* frame,unsigned long int error){
+  printk("Interrupt 0e Page Fault fired!\n");
+  showInterruptRegis(frame,error);
 	asm volatile("cli\nhlt");
 }
 
@@ -271,7 +278,6 @@ void initialise_interrupts(){
     setRawInterrupt(z,NakedInterruptHandler);
   }
   asm volatile ("lidt %0" : : "m"(idtr));
-
   interrupts_enable();
   interrupt_eoi();
   if(check_apic()){

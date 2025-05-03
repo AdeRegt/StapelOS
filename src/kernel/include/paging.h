@@ -31,3 +31,4 @@ typedef struct{
 
 void initialise_paging();
 void define_linear_memory_block(void *address);
+void define_seperate_memory_block(void *virtualmemory, void *physicalmemory);

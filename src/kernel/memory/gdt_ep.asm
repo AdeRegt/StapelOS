@@ -37,18 +37,33 @@ LONG_MODE     equ 1 << 5
 GDT:
     .Null: equ $ - GDT
         dq 0
-    .Code: equ $ - GDT
+    .KernelCode: equ $ - GDT
         dd 0xFFFF                                   ; Limit & Base (low, bits 0-15)
         db 0                                        ; Base (mid, bits 16-23)
-        db PRESENT | NOT_SYS | EXEC | RW            ; Access
-        db GRAN_4K | LONG_MODE | 0xF                ; Flags & Limit (high, bits 16-19)
+        db 0x9A            ; Access
+        db 0xA0 | 0xF                ; Flags & Limit (high, bits 16-19)
         db 0                                        ; Base (high, bits 24-31)
-    .Data: equ $ - GDT
+    .KernelData: equ $ - GDT
         dd 0xFFFF                                   ; Limit & Base (low, bits 0-15)
         db 0                                        ; Base (mid, bits 16-23)
-        db PRESENT | NOT_SYS | RW                   ; Access
-        db GRAN_4K | SZ_32 | 0xF                    ; Flags & Limit (high, bits 16-19)
+        db 0x92                   ; Access
+        db 0xC0 | 0xF                    ; Flags & Limit (high, bits 16-19)
+        db 0                                        ; Base (high, bits 24-31)
+    .UserCode: equ $ - GDT
+        dd 0xFFFF                                   ; Limit & Base (low, bits 0-15)
+        db 0                                        ; Base (mid, bits 16-23)
+        db 0xFA            ; Access
+        db 0xA0 | 0xF                ; Flags & Limit (high, bits 16-19)
+        db 0                                        ; Base (high, bits 24-31)
+    .UserData: equ $ - GDT
+        dd 0xFFFF                                   ; Limit & Base (low, bits 0-15)
+        db 0                                        ; Base (mid, bits 16-23)
+        db 0xF2                   ; Access
+        db 0xC0 | 0xF                    ; Flags & Limit (high, bits 16-19)
         db 0                                        ; Base (high, bits 24-31)
     .Pointer:
         dw $ - GDT - 1
         dq GDT
+
+%include "memory/syscall.asm"
+%include "memory/umod.asm"

@@ -121,3 +121,54 @@ void* calloc(uint64_t requested_size){
 void* free(void* a){
   return a;
 }
+
+int is_whole_page_free(int index){
+  int ews = 0;
+  for(uint64_t i = 0 ; i < getMemoryInfoBlockCount() ; i++){
+    MemoryDescriptor *desc = (MemoryDescriptor*) ( ((uint64_t)memory_info->mMap) + ( i * memory_info->mMapDescSize ));
+    if( desc->Type==MEMORY_TYPE_FREE &&desc->PhysicalStart ){
+      for(uint64_t u = 0 ; u < desc->NumberOfPages ; u++){
+        if( ews>=index && ews<=(index+0x200) && memorymap[ews] == 1 ){
+          return 1;
+        }
+        ews++;
+      }
+    }
+  }
+  return 0;
+}
+
+void alloc_whole_page_free(int index){
+  int ews = 0;
+  for(uint64_t i = 0 ; i < getMemoryInfoBlockCount() ; i++){
+    MemoryDescriptor *desc = (MemoryDescriptor*) ( ((uint64_t)memory_info->mMap) + ( i * memory_info->mMapDescSize ));
+    if( desc->Type==MEMORY_TYPE_FREE &&desc->PhysicalStart ){
+      for(uint64_t u = 0 ; u < desc->NumberOfPages ; u++){
+        if( ews>=index && ews<=(index+0x200) ){
+          memorymap[ews] = 1 ;
+        }
+        ews++;
+      }
+    }
+  }
+}
+
+void* malloc_whole_page(){
+
+  int ews = 0;
+
+  for(uint64_t i = 0 ; i < getMemoryInfoBlockCount() ; i++){
+    MemoryDescriptor *desc = (MemoryDescriptor*) ( ((uint64_t)memory_info->mMap) + ( i * memory_info->mMapDescSize ));
+    if( desc->Type==MEMORY_TYPE_FREE &&desc->PhysicalStart ){
+      for(uint64_t u = 0 ; u < desc->NumberOfPages ; u++){
+        if( memorymap[ews]==0 && (( desc->PhysicalStart + ( u * MEMORY_PAGE_SIZE ) ) & 0x0FFFFF ) == 0 && is_whole_page_free(ews)==0 ){
+          alloc_whole_page_free(ews);
+          void* cv = (void*) ( desc->PhysicalStart + ( u * MEMORY_PAGE_SIZE ) );
+          return cv;
+        }
+        ews++;
+      }
+    }
+  }
+  printk("__out of memory\n");for(;;);
+}
