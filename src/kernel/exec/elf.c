@@ -69,6 +69,6 @@ void load_elf_executable(void* buffer){
 }
 
 void load_test_executable(){
-    #include "testelf.c"
+    #include "./../../../utils/create_testfile/testfile.c"
     load_elf_executable((void*)&buffer);
 }

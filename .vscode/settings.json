@@ -21,6 +21,8 @@
         "vga.h": "c",
         "bmp.h": "c",
         "elf.h": "c",
-        "random": "c"
+        "random": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c"
     }
 }

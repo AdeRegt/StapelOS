@@ -1,4 +1,5 @@
 all:
+	$(MAKE) -C utils
 	$(MAKE) -C src
 
 clean:

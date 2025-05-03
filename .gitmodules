@@ -7,3 +7,6 @@
 [submodule "src/bootloader/grub"]
 	path = src/bootloader/grub
 	url = https://github.com/AdeRegt/Trampoline.git
+[submodule "utils/file_to_c_variable"]
+	path = utils/file_to_c_variable
+	url = https://github.com/AdeRegt/file_to_c_variable.git

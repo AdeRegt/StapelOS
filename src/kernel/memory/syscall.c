@@ -22,17 +22,21 @@ uint64_t syscall_r13;
 uint64_t syscall_r14;
 uint64_t syscall_r15;
 
+void dump_syscall_regs(){
+    printk("SYSCALL\n");
+    printk("- rax %x [%d] \n",syscall_rax,syscall_rax);
+    printk("- rbx %x [%d] \n",syscall_rbx,syscall_rbx);
+    printk("- rcx %x [%d] \n",syscall_rcx,syscall_rcx);
+    printk("- rdx %x [%d] \n",syscall_rdx,syscall_rdx);
+    printk("- rsi %x [%d] \n",syscall_rsi,syscall_rsi);
+    printk("- rdi %x [%d] \n",syscall_rdi,syscall_rdi);
+    printk("- rsp %x [%d] \n",syscall_rsp,syscall_rsp);
+    printk("- rbp %x [%d] \n",syscall_rbp,syscall_rbp);
+}
+
  void syscallprobe(){
     #ifdef DEBUGSYSCALL
-    printk("SYSCALL\n");
-    printk("- rax %x \n",syscall_rax);
-    printk("- rbx %x \n",syscall_rbx);
-    printk("- rcx %x \n",syscall_rcx);
-    printk("- rdx %x \n",syscall_rdx);
-    printk("- rsi %x \n",syscall_rsi);
-    printk("- rdi %x \n",syscall_rdi);
-    printk("- rsp %x \n",syscall_rsp);
-    printk("- rbp %x \n",syscall_rbp);
+    dump_syscall_regs();
     #endif 
     if(syscall_rax==1){
         if(syscall_rdi!=1){
@@ -50,15 +54,7 @@ uint64_t syscall_r15;
         }
     }else{
         #ifndef DEBUGSYSCALL
-        printk("SYSCALL\n");
-        printk("- rax %x \n",syscall_rax);
-        printk("- rbx %x \n",syscall_rbx);
-        printk("- rcx %x \n",syscall_rcx);
-        printk("- rdx %x \n",syscall_rdx);
-        printk("- rsi %x \n",syscall_rsi);
-        printk("- rdi %x \n",syscall_rdi);
-        printk("- rsp %x \n",syscall_rsp);
-        printk("- rbp %x \n",syscall_rbp);
+        dump_syscall_regs();
         #endif 
         cli();
         hlt();
