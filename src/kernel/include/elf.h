@@ -14,7 +14,6 @@
 #define PT_LOAD 0x00000001
 
 
-
 typedef struct {
     uint8_t magic[4];
     uint8_t bitver;

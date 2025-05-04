@@ -56,6 +56,7 @@ void map_memory(void* pml4mem, void *virtualmemory,void* physicalmemory){
     PDE.present     = 1;
     PDE.readwrite   = 1;
     PDE.largepages  = 1;
+    PDE.usersuper   = 1;
     PD->pages[lookup.page_directory_table_index] = PDE;
 }
 

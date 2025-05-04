@@ -14,4 +14,4 @@ install:
 
 # Builder uses this target to run your application.
 run:
-	# qemu-system-x86_64 --cdrom ./media/cdrom.iso
+	qemu-system-x86_64 --cdrom ./media/efi_grub_cdrom.iso

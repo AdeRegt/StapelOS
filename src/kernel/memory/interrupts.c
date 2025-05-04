@@ -104,6 +104,31 @@ __attribute__((interrupt)) void MasterInteruptHandler0d(interrupt_frame* frame,u
 __attribute__((interrupt)) void MasterInteruptHandler0e(interrupt_frame* frame,unsigned long int error){
   printk("Interrupt 0e Page Fault fired!\n");
   showInterruptRegis(frame,error);
+  if(error & 0b00000000000000000000000000000001){
+    printk("- was caused by a page-protection violation\n");
+  }else{
+    printk("- was caused by a non-present page\n");
+  }
+  if(error & 0b00000000000000000000000000000010){
+    printk("- was caused by a write access\n");
+  }else{
+    printk("- was caused by a read access\n");
+  }
+  if(error & 0b00000000000000000000000000000100){
+    printk("- was caused while CPL = 3. This does not necessarily mean that the page fault was a privilege violation\n");
+  }
+  if(error & 0b00000000000000000000000000001000){
+    printk("- one or more page directory entries contain reserved bits which are set to 1. This only applies when the PSE or PAE flags in CR4 are set to 1\n");
+  }
+  if(error & 0b00000000000000000000000000010000){
+    printk("- was caused by an instruction fetch. This only applies when the No-Execute bit is supported and enabled.\n");
+  }
+  if(error & 0b00000000000000000000000000100000){
+    printk("- was caused by a protection-key violation. The PKRU register (for user-mode accesses) or PKRS MSR (for supervisor-mode accesses) specifies the protection key rights\n");
+  }
+  if(error & 0b00000000000000000000000001000000){
+    printk("- was caused by a shadow stack access\n");
+  }
 	asm volatile("cli\nhlt");
 }
 

@@ -23,6 +23,8 @@
         "elf.h": "c",
         "random": "c",
         "stdio.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "syscall.h": "c",
+        "unistd.h": "c"
     }
 }

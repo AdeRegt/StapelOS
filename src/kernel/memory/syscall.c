@@ -59,6 +59,7 @@ void dump_syscall_regs(){
         cli();
         hlt();
     }
+    // define_linear_memory_block((void*)syscall_rcx);
     // printk((char*) syscall_rsi);
 }
 
@@ -99,9 +100,9 @@ void syscall_set_mask(uint32_t mask){
 void initialise_syscall(){
     // https://wiki.osdev.org/SYSENTER
     syscall_enable();
-    syscall_set_segments(0x8,0x18);
+    syscall_set_segments(0x8,0x8);
     syscall_set_entry_point((uint64_t)&syscallentrypoint);
-    syscall_set_mask(0x202);
+    syscall_set_mask(0);
 
     // syscall_exstack = ( (uint64_t) malloc(0x1000) ) - 0x1000;
 }
