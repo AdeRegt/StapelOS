@@ -16,7 +16,7 @@
         {
             "label": "Launch QEMU",
             "type": "shell",
-            "command": "qemu-system-x86_64 -S -gdb tcp::1234 -boot d -cdrom ./media/efi_grub_cdrom.iso -m 512 -daemonize"
+            "command": "make all install && qemu-system-x86_64 -S -gdb tcp::1234 -boot d -cdrom ./media/efi_grub_cdrom.iso -m 512 -daemonize",
         }
     ]
 }
