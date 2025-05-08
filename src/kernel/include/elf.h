@@ -13,6 +13,7 @@
 #define EFI_TARGET_OFF 0x40
 #define PT_LOAD 0x00000001
 
+#define USE_USERMODE
 
 typedef struct {
     uint8_t magic[4];
