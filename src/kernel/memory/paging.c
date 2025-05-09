@@ -30,6 +30,7 @@ void map_memory(void* pml4mem, void *virtualmemory,void* physicalmemory){
         memset(PDP, 0, 0x1000);
         PDE.address = (uint64_t)PDP >> 12;
         PDE.present = 1;
+        PDE.usersuper   = 1;
         PDE.readwrite = 1;
         PLM4->pages[lookup.page_map_level_4_table_index] = PDE;
     }else{
@@ -45,6 +46,7 @@ void map_memory(void* pml4mem, void *virtualmemory,void* physicalmemory){
         PDE.address = (uint64_t)PD >> 12;
         PDE.present = 1;
         PDE.readwrite = 1;
+        PDE.usersuper   = 1;
         PDP->pages[lookup.page_directory_pointer_table_index] = PDE;
     }else{
         PD = (PageTable*)((uint64_t)PDE.address<<12);

@@ -103,7 +103,7 @@ void initialise_syscall(){
     syscall_enable();
     syscall_set_segments(GDT_KERNEL_CODE_SEGMENT,GDT_USER_CODE_SEGMENT);
     syscall_set_entry_point((uint64_t)&syscallentrypoint);
-    syscall_set_mask(0);
+    syscall_set_mask(0x2002);
 
     // syscall_exstack = ( (uint64_t) malloc(0x1000) ) - 0x1000;
 }
