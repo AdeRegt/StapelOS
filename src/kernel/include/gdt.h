@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 
-#define GDT_ENTRIES 5
+#define GDT_ENTRIES 32
 
 // GDT entry structure
 typedef struct {
@@ -18,6 +18,31 @@ typedef struct {
     uint16_t limit; // Size of the GDT
     uint64_t base;  // Address of the GDT
 } __attribute__((packed)) GDTR;
+
+typedef struct {
+
+    unsigned int reserved;
+    
+    unsigned long rsp0; 
+    unsigned long rsp1; 
+    unsigned long rsp2;
+
+    unsigned int reserved2[2];
+
+    unsigned long ist1; 
+    unsigned long ist2; 
+    unsigned long ist3; 
+    unsigned long ist4; 
+    unsigned long ist5; 
+    unsigned long ist6; 
+    unsigned long ist7;
+
+    unsigned int reserved3[2];
+
+    unsigned short reserved4;
+    unsigned short IOPB_offset;
+
+} __attribute__((packed)) TSS;
 
 void initialize_gdt();
 extern void gdt_flush();
