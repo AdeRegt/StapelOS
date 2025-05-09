@@ -27,12 +27,20 @@ void exit(uint64_t res){
     syscall(70,res,0,0,0,0);
 }
 
+int strlen(char* str){
+    int i = 0;
+    while(str[i] != '\0'){
+        i++;
+    }
+    return i;
+}
+
 void write_string(char* message){
-    syscall(1,0,0,10,(uint64_t)message,1);
+    syscall(1,0,0,strlen(message),(uint64_t)message,1);
 }
 
 void main(){
-    write_string("hello world");
+    write_string("This message is send from Usermode!\n\n");
     exit(0);
     asm volatile("cli\nhlt");
 }

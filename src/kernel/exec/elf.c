@@ -59,11 +59,11 @@ void load_elf_executable(void* buffer){
             }
         }
     }
-    uprogstart = (uint32_t)(uint64_t)header->e_entry;
+    uprogstart = header->e_entry;
     #ifdef USE_USERMODE
     jump_usermode();
     #else
-    void (*ProgramStart)() = ((__attribute__((sysv_abi)) void (*)() ) (uint64_t)header->e_entry);
+    void (*ProgramStart)() = ((__attribute__((sysv_abi)) void (*)() ) uprogstart);
     ProgramStart();
     #endif 
 }
