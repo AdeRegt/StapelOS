@@ -3,6 +3,7 @@
 #include "../include/memory.h"
 #include "../include/paging.h"
 #include "../include/cpu.h"
+#include "../include/gdt.h"
 
 uint64_t syscall_rax;
 uint64_t syscall_rbx;
@@ -100,7 +101,7 @@ void syscall_set_mask(uint32_t mask){
 void initialise_syscall(){
     // https://wiki.osdev.org/SYSENTER
     syscall_enable();
-    syscall_set_segments(0x8,0x8);
+    syscall_set_segments(GDT_KERNEL_CODE_SEGMENT,GDT_USER_CODE_SEGMENT);
     syscall_set_entry_point((uint64_t)&syscallentrypoint);
     syscall_set_mask(0);
 

@@ -5,7 +5,6 @@
 // 0x8F
 #define IDT_TA_TrapGate         0b10001111
 #define IDT_MAX_DESCRIPTORS     251
-#define GDT_CODE_SEGMENT 0x08
 
 #define INT_OFFSET 0x20
 

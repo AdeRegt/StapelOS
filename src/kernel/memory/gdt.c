@@ -75,5 +75,5 @@ void initialize_gdt() {
     asm volatile("lgdt %0" : : "m"(gdtr));
 
     gdt_flush();
-    x64_load_ltr(0x2B);
+    x64_load_ltr(GDT_TSS);
 }

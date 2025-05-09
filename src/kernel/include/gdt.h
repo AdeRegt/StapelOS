@@ -3,6 +3,13 @@
 
 #define GDT_ENTRIES 32
 
+#define GDT_NULL 0x00
+#define GDT_KERNEL_CODE_SEGMENT 0x08
+#define GDT_KERNEL_DATA_SEGMENT 0x10
+#define GDT_USER_CODE_SEGMENT 0x18
+#define GDT_USER_DATA_SEGMENT 0x20
+#define GDT_TSS 0x28
+
 // GDT entry structure
 typedef struct {
     uint16_t limit_low;  // Lower 16 bits of the limit

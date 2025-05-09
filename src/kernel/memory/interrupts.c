@@ -5,6 +5,7 @@
 #include "../include/pic.h"
 #include "../include/apic.h"
 #include "../include/timer.h"
+#include "../include/gdt.h"
 
 static IDTR idtr;
 __attribute__ ((aligned(0x10))) static IDTDescEntry idt[256];
@@ -237,7 +238,7 @@ void setRawInterrupt(int offset,void *fun){
   IDTDescEntry* int_PageFault = (IDTDescEntry*)(idtr.Offset + ((offset) * sizeof(IDTDescEntry)));
   interrupt_set_offset(int_PageFault,(uint64_t)fun);
   int_PageFault->type_attr = IDT_TA_TrapGate;
-  int_PageFault->selector = GDT_CODE_SEGMENT;
+  int_PageFault->selector = GDT_KERNEL_CODE_SEGMENT;
 }
 
 void setInterrupt(int offset,void *fun){
