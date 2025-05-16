@@ -16,7 +16,6 @@
 [extern syscall_r13]
 [extern syscall_r14]
 [extern syscall_r15]
-[extern syscall_exstack]
 
 syscallentrypoint:
     mov qword [syscall_rax],rax
@@ -35,7 +34,6 @@ syscallentrypoint:
     mov qword [syscall_r13],r13
     mov qword [syscall_r14],r14
     mov qword [syscall_r15],r15
-    ;mov rsp,qword [syscall_exstack]
     call syscallprobe
     mov rax, qword [syscall_rax]
     mov rbx, qword [syscall_rbx]

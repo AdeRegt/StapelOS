@@ -13,7 +13,6 @@ uint64_t syscall_rsi;
 uint64_t syscall_rdi;
 uint64_t syscall_rsp;
 uint64_t syscall_rbp;
-uint64_t syscall_exstack;
 uint64_t syscall_r8;
 uint64_t syscall_r9;
 uint64_t syscall_r10;
@@ -60,8 +59,6 @@ void dump_syscall_regs(){
         cli();
         hlt();
     }
-    // define_linear_memory_block((void*)syscall_rcx);
-    // printk((char*) syscall_rsi);
 }
 
 extern void syscallentrypoint();
@@ -99,11 +96,8 @@ void syscall_set_mask(uint32_t mask){
 }
 
 void initialise_syscall(){
-    // https://wiki.osdev.org/SYSENTER
     syscall_enable();
     syscall_set_segments(GDT_KERNEL_CODE_SEGMENT,GDT_USER_CODE_SEGMENT);
     syscall_set_entry_point((uint64_t)&syscallentrypoint);
     syscall_set_mask(0x2002);
-
-    // syscall_exstack = ( (uint64_t) malloc(0x1000) ) - 0x1000;
 }

@@ -27,6 +27,8 @@
         "syscall.h": "c",
         "unistd.h": "c",
         "compare": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "symbols.h": "c",
+        "reflection.h": "c"
     }
 }

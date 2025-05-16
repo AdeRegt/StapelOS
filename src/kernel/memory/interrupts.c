@@ -6,6 +6,7 @@
 #include "../include/apic.h"
 #include "../include/timer.h"
 #include "../include/gdt.h"
+#include "../include/reflection.h"
 
 static IDTR idtr;
 __attribute__ ((aligned(0x10))) static IDTDescEntry idt[256];
@@ -28,6 +29,7 @@ uint8_t interrupt_get_int_number(){
 
 static void showInterruptRegis(interrupt_frame* frame,unsigned long int error){
   printk("cs: %x , flags:%x , ip:%x , sp:%x , ss:%x , error:%x \n",frame->cs,frame->flags,frame->ip,frame->sp,frame->ss,error);
+  printk("IP contains code from %s \n",getSymbolnameForAddress(frame->ip));
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler00(interrupt_frame* frame){
