@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
         if(strcmp(line,"getSymbolnameForAddress") == 0){
             continue;
         }
-        fprintf(outfile,"\textern void %s();\n\tif(input>((uint64_t)&%s)){\n\t\tres = \"%s\";\n\t}\n",line,line,line);
+        fprintf(outfile,"\textern void %s();\n\tif(input>=((uint64_t)&%s)){\n\t\tres = \"%s\";\n\t}\n",line,line,line);
     }
 
 
