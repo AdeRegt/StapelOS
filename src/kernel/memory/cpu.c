@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <cpuid.h>
 #include "../include/string.h"
+#include "../include/cpu.h"
 
 void outportb(uint16_t port, uint8_t value){
     asm volatile ("outb %0, %1" : : "a"(value), "Nd"(port));
@@ -203,4 +204,14 @@ void __stack_chk_fail(){
 void __stack_chk_fail_local(){
     printk("stack check fail!\n");
     for(;;);
+}
+
+int cpu_get_current_ring(){
+    uint64_t cs;
+    asm volatile("mov %%cs, %0" : "=r"(cs));
+    return cpu_get_ring_from_cs(cs);
+}
+
+int cpu_get_ring_from_cs(uint64_t cs){
+    return (cs & 0x3);
 }

@@ -4,12 +4,21 @@
 #include "../include/paging.h"
 #include "../include/cpu.h"
 
-uint32_t uprogstart;
+uint64_t uprogstart;
 extern void jump_usermode();
 
 int load_elf_segment(void* reference,ELFProgramHeader* ph){
-    if(ph->p_memsz>0x200000){
+    if(ph->p_memsz>PAGE_GAP_SIZE){
         return 1;
+    }
+    if(!(ph->p_vaddr&PAGE_AND)){
+        // maybe we need to allocate a new page?
+        uint32_t toyaddr = ph->p_vaddr >> 21;
+        if((toyaddr%2)==0){
+            // yes, we need to allocate a new page!
+            void *freepage = malloc_whole_page();
+            define_seperate_memory_block((void*)ph->p_vaddr,freepage);
+        }
     }
     memcpy((void*)ph->p_vaddr,(void*)(((uint64_t)reference) + ph->p_offset),ph->p_filesz);
     return 0;
@@ -45,8 +54,6 @@ void load_elf_executable(void* buffer){
         printk("elf: wrong headersize \n");
         return;
     }
-    void *freepage = malloc_whole_page();
-    define_seperate_memory_block((void*)0x400000,freepage);
     void* ks = (void*)0;
     for(uint16_t i = 0 ; i < header->e_phnum ; i++){
         uint64_t adu = ((uint64_t)buffer) + header->e_phoff + (i*header->e_phentsize);

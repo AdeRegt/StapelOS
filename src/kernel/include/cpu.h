@@ -32,3 +32,6 @@ uint32_t get_cpu_feature_information();
 uint8_t cpu_has_model_specific_registers();
 void cpu_get_specific_registers(uint32_t msr, uint32_t *lo, uint32_t *hi);
 void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi);
+
+int cpu_get_current_ring();
+int cpu_get_ring_from_cs(uint64_t cs);

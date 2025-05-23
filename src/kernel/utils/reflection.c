@@ -827,6 +827,14 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&__stack_chk_fail_local)){
 		res = "__stack_chk_fail_local";
 	}
+	extern void cpu_get_current_ring();
+	if(input>=((uint64_t)&cpu_get_current_ring)){
+		res = "cpu_get_current_ring";
+	}
+	extern void cpu_get_ring_from_cs();
+	if(input>=((uint64_t)&cpu_get_ring_from_cs)){
+		res = "cpu_get_ring_from_cs";
+	}
 	extern void set_gdt_entry();
 	if(input>=((uint64_t)&set_gdt_entry)){
 		res = "set_gdt_entry";
@@ -850,6 +858,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	extern void interrupt_get_int_number();
 	if(input>=((uint64_t)&interrupt_get_int_number)){
 		res = "interrupt_get_int_number";
+	}
+	extern void print_callstack();
+	if(input>=((uint64_t)&print_callstack)){
+		res = "print_callstack";
 	}
 	extern void MasterInteruptHandler00();
 	if(input>=((uint64_t)&MasterInteruptHandler00)){

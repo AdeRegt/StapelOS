@@ -3,6 +3,7 @@
 
 #define PAGE_GAP_SIZE 0x200000
 #define PAGE_LOCATOR 0xF00000
+#define PAGE_AND 0xFFFFF
 
 typedef struct{
     uint8_t present: 1;

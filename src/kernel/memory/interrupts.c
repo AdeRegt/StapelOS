@@ -27,9 +27,29 @@ uint8_t interrupt_get_int_number(){
   }
 }
 
+void print_callstack(interrupt_frame* frame, int max_depth) {
+    uintptr_t* rbp;
+    uintptr_t rip;
+    int depth = 0;
+
+    // On interrupt, rbp is not always saved in the frame, but sp points to the stack at interrupt time.
+    // If you save rbp in your interrupt_frame, use that. Otherwise, try to read from stack.
+    rbp = (uintptr_t*)__builtin_frame_address(0);
+
+    printk("Call stack:\n");
+    while (rbp && depth < max_depth) {
+        rip = *(rbp + 1); // Return address is right above rbp
+        printk("  [%d] %s\n", depth, getSymbolnameForAddress(rip));
+        rbp = (uintptr_t*)(*rbp); // Next rbp
+        depth++;
+    }
+}
+
 static void showInterruptRegis(interrupt_frame* frame,unsigned long int error){
   printk("cs: %x , flags:%x , ip:%x , sp:%x , ss:%x , error:%x \n",frame->cs,frame->flags,frame->ip,frame->sp,frame->ss,error);
+  printk("currently we are in ring %x but the process was in ring %x \n",cpu_get_current_ring(),cpu_get_ring_from_cs(frame->cs));
   printk("IP contains code from %s \n",getSymbolnameForAddress(frame->ip));
+  print_callstack(frame,10);
 }
 
 __attribute__((interrupt)) void MasterInteruptHandler00(interrupt_frame* frame){
