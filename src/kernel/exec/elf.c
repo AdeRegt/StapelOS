@@ -5,6 +5,7 @@
 #include "../include/cpu.h"
 
 uint64_t uprogstart;
+uint64_t usermode_eflags = USERMODE_EFLAGS;
 extern void jump_usermode();
 
 int load_elf_segment(void* reference,ELFProgramHeader* ph){

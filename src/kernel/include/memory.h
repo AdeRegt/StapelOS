@@ -5,6 +5,8 @@
 #define MEMORY_TYPE_FREE 7
 #define MEMORY_PAGE_SIZE 0x1000
 
+#define USERMODE_EFLAGS 0x2002
+
 typedef struct {
     uint32_t                          Type;           // Field size is 32 bits followed by 32 bit pad
     uint32_t                          Pad;
