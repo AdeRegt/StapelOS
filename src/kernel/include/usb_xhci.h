@@ -159,6 +159,9 @@
 #define XHCI_PORT_LINK_TEST_STATE 11
 #define XHCI_PORT_LINK_RESUME_STATE 15
 
+#define XHCI_COMMAND_RING_SIZE 256
+
+
 typedef struct{
     uint32_t ring_segment_base_address_low;
     uint32_t ring_segment_base_address_high;

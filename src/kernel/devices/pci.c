@@ -3,6 +3,7 @@
 #include "../include/cpu.h"
 #include "../include/usb_xhci.h"
 #include "../include/usb_ehci.h"
+#include "../include/usb_ohci.h"
 #include "../include/interrupts.h"
 
 void pciConfigWriteWord (uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint16_t value) {
@@ -71,8 +72,10 @@ void install_interrupt_from_pci(uint8_t bus,uint8_t slot,uint8_t function,void *
 
 void check_pci_entry_for_usb(uint8_t bus,uint8_t slot,uint8_t function){
   uint8_t interface = pciConfigReadByteHi(bus,slot,function,PCI_FIELDS_INTERFACE);
-  if(interface==0x00||interface==0x10){
-    // printk("USB1.0 found\n");
+  if(interface==0x00){
+    // printk("USB1.0 found, namely %x \n",interface);
+  }else if(interface==0x10){
+    initialise_ohci (bus, slot, function);
   }else if(interface==0x20){
     initialise_ehci (bus, slot, function);
   }else if(interface==0x30){
@@ -80,6 +83,14 @@ void check_pci_entry_for_usb(uint8_t bus,uint8_t slot,uint8_t function){
   }else{
     printk("error: unknown USB type\n");
   }
+}
+
+void pci_enable_busmastering(uint8_t bus, uint8_t slot, uint8_t func){
+  uint16_t cmd = pciConfigReadWord(bus, slot, func, 0x04);
+	if (!(cmd & (1 << 2))) {
+		// Bus mastering is not enabled, enable it
+		pciConfigWriteWord(bus, slot, func, 0x04, cmd | (1 << 2));
+	}
 }
 
 void check_pci_entry(uint8_t bus,uint8_t slot,uint8_t function){

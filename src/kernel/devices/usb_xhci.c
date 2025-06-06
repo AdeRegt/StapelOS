@@ -21,6 +21,12 @@ __attribute__((interrupt)) void interrupt_xhci(interrupt_frame* frame){
 	outportb(0x20,0x20);
 }
 
+void xhci_sleep(){
+	for(int i = 0 ; i < 80 ; i++){
+		sleep(1000);
+	}
+}
+
 void xhci_dump_caplength(){
 	printk("Capability Registers Length (CAPLENGTH) : %x \n",CAPLENGTH);
 }
@@ -277,33 +283,35 @@ void xhci_wait_for_controller_is_ready(){
 	}
 }
 
+uint8_t commandringbasicswitch = 1;
+
 uint8_t xhci_command_ring_get_switch()
 {
-		return 1;
+	return commandringbasicswitch;
 }
 
 DefaultTRB *xhci_request_free_command_trb(uint8_t inc)
 {
-		DefaultTRB *dtrb = (DefaultTRB*) (commandring + (sizeof(DefaultTRB)*command_ring_pointer));
-		memset(dtrb,0,sizeof(DefaultTRB));
-		if(inc)
-		{
-				command_ring_pointer++;
-		}
-		return dtrb;
+	DefaultTRB *dtrb = (DefaultTRB*) (commandring + (sizeof(DefaultTRB)*command_ring_pointer));
+	memset(dtrb,0,sizeof(DefaultTRB));
+	if(inc)
+	{
+		command_ring_pointer = (command_ring_pointer + 1) % XHCI_COMMAND_RING_SIZE;
+	}
+	return dtrb;
 }
 
 volatile CommandCompletionEventTRB *xhci_ring_and_wait(uint32_t doorbell_offset,uint32_t doorbell_value,uint32_t checkvalue)
 {
+	xhci_sleep();
 	DOORBELL[doorbell_offset] = doorbell_value;
 	sleep(5);
 	while((IMAN(0)&1)==0)
 	{
 		sleep(5);
 	}
-	int timeout = 15;
 	again:
-	sleep(5);
+	xhci_sleep();
 	for(int i = 0 ; i < XHCI_EVENT_RING_SIZE ; i++)
 	{
 		volatile CommandCompletionEventTRB *to = (volatile CommandCompletionEventTRB*)&((volatile CommandCompletionEventTRB*)(eventring+(i*sizeof(CommandCompletionEventTRB))))[0];
@@ -316,12 +324,7 @@ volatile CommandCompletionEventTRB *xhci_ring_and_wait(uint32_t doorbell_offset,
 			return to;
 		}
 	}
-	timeout--;
-	if(timeout)
-	{
-		goto again;
-	}
-	return 0;
+	goto again;
 }
 
 uint8_t xhci_resultcode_explained(volatile CommandCompletionEventTRB* res,const char* functionname)
@@ -861,6 +864,9 @@ void xhci_check_ports()
 
 void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 {
+	// enable busmastering if needed
+	pci_enable_busmastering(bus, slot, func);
+
 	// get interrupt
 	install_interrupt_from_pci(bus,slot,func,interrupt_xhci);
 

@@ -35,6 +35,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&check_pci_entry_for_usb)){
 		res = "check_pci_entry_for_usb";
 	}
+	extern void pci_enable_busmastering();
+	if(input>=((uint64_t)&pci_enable_busmastering)){
+		res = "pci_enable_busmastering";
+	}
 	extern void check_pci_entry();
 	if(input>=((uint64_t)&check_pci_entry)){
 		res = "check_pci_entry";
@@ -295,9 +299,69 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&install_usb_msd)){
 		res = "install_usb_msd";
 	}
+	extern void ohci_reset();
+	if(input>=((uint64_t)&ohci_reset)){
+		res = "ohci_reset";
+	}
+	extern void ohci_init_hcca();
+	if(input>=((uint64_t)&ohci_init_hcca)){
+		res = "ohci_init_hcca";
+	}
+	extern void ohci_disable_interrupts();
+	if(input>=((uint64_t)&ohci_disable_interrupts)){
+		res = "ohci_disable_interrupts";
+	}
+	extern void ohci_set_operational();
+	if(input>=((uint64_t)&ohci_set_operational)){
+		res = "ohci_set_operational";
+	}
+	extern void ohci_create_endpoint_descriptor();
+	if(input>=((uint64_t)&ohci_create_endpoint_descriptor)){
+		res = "ohci_create_endpoint_descriptor";
+	}
+	extern void ohci_create_transfer_descriptor();
+	if(input>=((uint64_t)&ohci_create_transfer_descriptor)){
+		res = "ohci_create_transfer_descriptor";
+	}
+	extern void interrupt_ohci();
+	if(input>=((uint64_t)&interrupt_ohci)){
+		res = "interrupt_ohci";
+	}
+	extern void ohci_bus_reset();
+	if(input>=((uint64_t)&ohci_bus_reset)){
+		res = "ohci_bus_reset";
+	}
+	extern void ohci_read_port_status();
+	if(input>=((uint64_t)&ohci_read_port_status)){
+		res = "ohci_read_port_status";
+	}
+	extern void ohci_write_port_status();
+	if(input>=((uint64_t)&ohci_write_port_status)){
+		res = "ohci_write_port_status";
+	}
+	extern void ohci_is_operational();
+	if(input>=((uint64_t)&ohci_is_operational)){
+		res = "ohci_is_operational";
+	}
+	extern void wait_for_transfer_complete();
+	if(input>=((uint64_t)&wait_for_transfer_complete)){
+		res = "wait_for_transfer_complete";
+	}
+	extern void setup_control_transfer_for_get_descriptor();
+	if(input>=((uint64_t)&setup_control_transfer_for_get_descriptor)){
+		res = "setup_control_transfer_for_get_descriptor";
+	}
+	extern void initialise_ohci();
+	if(input>=((uint64_t)&initialise_ohci)){
+		res = "initialise_ohci";
+	}
 	extern void interrupt_xhci();
 	if(input>=((uint64_t)&interrupt_xhci)){
 		res = "interrupt_xhci";
+	}
+	extern void xhci_sleep();
+	if(input>=((uint64_t)&xhci_sleep)){
+		res = "xhci_sleep";
 	}
 	extern void xhci_dump_caplength();
 	if(input>=((uint64_t)&xhci_dump_caplength)){
