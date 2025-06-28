@@ -751,7 +751,7 @@ uint8_t xhci_initialise_port(int portno)
 	if(PORTSC_PED (portno)==0)
 	{
 		PORTSC(portno) = PORTSC (portno) | 0x10;
-		sleep(15);
+		xhci_sleep();
 	}
 	// and now?
 	if(PORTSC_PED (portno)==0)
@@ -853,7 +853,7 @@ uint8_t xhci_initialise_port(int portno)
 
 void xhci_check_ports()
 {
-	for(int i = 0 ; i <= HCSPARAMS1_MaxPorts ;i++)
+	for(int i = 0 ; i < HCSPARAMS1_MaxPorts ;i++)
 	{
 		if( (PORTSC(i) & 1) && xhci_initialise_port(i) )
 		{
@@ -965,7 +965,7 @@ void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 
 	USBCMD = USBCMD | USBCMD_MASK_RS;
 
-	sleep(10);
+	xhci_sleep();
 
 	xhci_check_ports();
 }

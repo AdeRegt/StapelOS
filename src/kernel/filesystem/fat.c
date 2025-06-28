@@ -174,6 +174,9 @@ void fat_initialise_fat(Partition part){
 void fat_handle_partition(Partition part){
 	if(part.type==11){
 		fat_initialise_fat (part);
+	}else{
+		printk("FAT: Partition type %x is not supported!\n",part.type);
+		return;
 	}
 }
 

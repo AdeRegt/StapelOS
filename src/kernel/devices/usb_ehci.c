@@ -383,6 +383,10 @@ void ehci_probe_ports(){
 }
 
 void initialise_ehci(uint8_t bus, uint8_t slot, uint8_t func){
+
+	// enable busmastering if needed
+	pci_enable_busmastering(bus, slot, func);
+    
     // get interrupt
 	install_interrupt_from_pci(bus,slot,func,interrupt_ehci);
 

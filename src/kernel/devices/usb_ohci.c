@@ -177,6 +177,9 @@ void initialise_ohci(uint8_t bus, uint8_t slot, uint8_t func){
     ohci_base_address = pciConfigReadDWord(bus, slot, func, 0x10);
     printk("base address %x\n",ohci_base_address);
 
+	// enable busmastering if needed
+	pci_enable_busmastering(bus, slot, func);
+
     install_interrupt_from_pci(bus,slot,func,interrupt_ohci);
 
     ohci_reset();
@@ -190,7 +193,7 @@ void initialise_ohci(uint8_t bus, uint8_t slot, uint8_t func){
     ohci_set_operational();
     ohci_bus_reset();
 
-    while (!(ohci_read_port_status(0) & PORT_CONNECTION_BIT)) {}
+    // while (!(ohci_read_port_status(0) & PORT_CONNECTION_BIT)) {}
 
     if (!(ohci_read_port_status(0) & PORT_ENABLE_BIT)) {
         printk("Enabling port 0\n");

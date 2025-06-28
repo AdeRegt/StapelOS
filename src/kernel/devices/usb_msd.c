@@ -44,6 +44,7 @@ void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter,void* out
 	if(pi!=1){
 		return 0;
 	}
+	printk("usb_msd: recieved command status wrapper with tag %d \n",ep->tag);
 
 	CommandStatusWrapper *csw = (CommandStatusWrapper*) (out + (512*counter));
 	if(csw->signature!=0x53425355){
