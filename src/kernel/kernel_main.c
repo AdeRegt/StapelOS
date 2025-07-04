@@ -54,6 +54,7 @@ void kernel_main(BootInfo* bi){
   initialise_memory(bi->memory_info);
   initialise_paging();
   define_linear_memory_block(bi->graphics_info->BaseAddress);
+  define_linear_memory_block(bi->graphics_info->BaseAddress+PAGE_GAP_SIZE);
   initialise_interrupts();
   initialise_timer();
   initialise_serial();

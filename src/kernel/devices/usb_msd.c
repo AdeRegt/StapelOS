@@ -4,6 +4,7 @@
 #include "../include/memory.h"
 #include "../include/fat.h"
 
+void *rsb;
 uint32_t usbtagpointer = 1;
 
 CommandBlockWrapper* usb_stick_generate_pointer()
@@ -54,8 +55,6 @@ void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter,void* out
 	}
 	return out;
 }
-
-void *rsb;
 
 void *read_sectors(uint64_t sector, uint32_t counter,void* out){
 	return usb_stick_one_read (rsb,sector,counter,out);

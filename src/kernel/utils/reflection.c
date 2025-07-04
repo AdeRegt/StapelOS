@@ -511,6 +511,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&xhci_fill_endpoint)){
 		res = "xhci_fill_endpoint";
 	}
+	extern void xhci_test_bulk();
+	if(input>=((uint64_t)&xhci_test_bulk)){
+		res = "xhci_test_bulk";
+	}
 	extern void xhci_register_bulk_endpoints();
 	if(input>=((uint64_t)&xhci_register_bulk_endpoints)){
 		res = "xhci_register_bulk_endpoints";

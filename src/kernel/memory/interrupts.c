@@ -7,9 +7,10 @@
 #include "../include/timer.h"
 #include "../include/gdt.h"
 #include "../include/reflection.h"
+#include "../include/memory.h"
 
-static IDTR idtr;
-__attribute__ ((aligned(0x10))) static IDTDescEntry idt[256];
+__attribute__ ((aligned(0x1000))) static IDTR idtr;
+__attribute__ ((aligned(0x1000))) static IDTDescEntry idt[256];
 
 void interrupt_eoi(){
   if(check_apic()){
@@ -285,6 +286,9 @@ void initialise_interrupts(){
   }else{
 	  initialise_pic();
   }
+
+  memset(&idt, 0, sizeof(IDTDescEntry) * IDT_MAX_DESCRIPTORS);
+  memset(&idtr, 0, sizeof(IDTR));
 
   idtr.Offset = (uintptr_t)&idt[0];
   idtr.Limit = (uint16_t)sizeof(IDTDescEntry) * IDT_MAX_DESCRIPTORS - 1;

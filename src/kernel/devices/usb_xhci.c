@@ -12,6 +12,8 @@ void* dcbaap_items;
 void *commandring;
 void *eventring;
 int command_ring_pointer;
+uint16_t xhci_vendor;
+uint16_t xhci_device;
 
 __attribute__((interrupt)) void interrupt_xhci(interrupt_frame* frame){
 	printk("xhciint %x \n",USBSTS);
@@ -22,9 +24,15 @@ __attribute__((interrupt)) void interrupt_xhci(interrupt_frame* frame){
 }
 
 void xhci_sleep(){
-	for(int i = 0 ; i < 80 ; i++){
-		sleep(1000);
-	}
+	// printk("vendor: %x device: %x \n",xhci_vendor,xhci_device);
+	// if(xhci_vendor == 0x8086){
+		
+	// 	for(int i = 0 ; i < 80 ; i++){
+	// 		sleep(1000);
+	// 	}
+	// }else{
+		sleep(2000);
+	// }
 }
 
 void xhci_dump_caplength(){
@@ -700,6 +708,26 @@ void xhci_fill_endpoint(USBSocket* socket,usb_endpoint* ep,void* ring,int id,int
 	((XHCIInputContextBuffer*)socket->dataset)->epx[id].DequeueCycleState = 1;
 }
 
+void xhci_test_bulk(USBSocket* socket){
+	
+	printk("Testing bulk endpoints...\n");
+	// Example: test bulk OUT and IN
+	uint8_t test_out[64] = {0xAA, 0xBB, 0xCC, 0xDD}; // Fill as needed
+	uint8_t test_in[64] = {0};
+
+	int out_res = xhci_send_bulk(socket->out, (void*)0x1000, sizeof(test_out));
+	printk("Bulk OUT result $ : %d\n", out_res);
+
+	int in_res = xhci_recieve_bulk(socket->in, test_in, sizeof(test_in));
+	printk("Bulk IN result: %d\n", in_res);
+
+	// Optionally print test_in buffer
+	for (int i = 0; i < sizeof(test_in); i++) {
+		printk("%02X ", test_in[i]);
+	}
+	printk("\n");
+}
+
 uint8_t xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
 	//
 	// OUT endpoint direction
@@ -874,6 +902,11 @@ void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 	base_xhci_address = 0;
 	base_xhci_address += pciConfigReadDWord (bus, slot, func, 0x10) & 0xFFFFFFF0;
 	command_ring_pointer = 0;
+
+	// get the vendor ID 
+	uint32_t pciid = pciConfigReadDWord(bus, slot, func, 0x00);
+	xhci_vendor = pciid & 0xFFFF;
+	xhci_device = (pciid >> 16) & 0xFFFF;
 
 	//
 	// check the capabilities to stop the system
