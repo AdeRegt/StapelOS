@@ -36,7 +36,7 @@ void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter,void* out
     ep->data[7] = (uint8_t) ((counter >> 8) & 0xFF);
     ep->data[8] = (uint8_t) ((counter) & 0xFF);
 
-    int pi = usb_send_bulk (data, ep, sizeof(CommandBlockWrapper));
+	int pi = usb_send_bulk (data, ep, sizeof(CommandBlockWrapper));
 	if(pi!=1){
 		return 0;
 	}
@@ -58,6 +58,36 @@ void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter,void* out
 
 void *read_sectors(uint64_t sector, uint32_t counter,void* out){
 	return usb_stick_one_read (rsb,sector,counter,out);
+}
+
+void *usb_stick_inquiry(void *data)
+{
+    CommandBlockWrapper *ep = usb_stick_generate_pointer();
+    ep->transferlength = 6;
+    ep->flags = 0x80;
+    ep->command_len = 6;
+    // command ENQUIRY(0x12)
+    ep->data[0] = 0x12;
+
+	int pi = usb_send_bulk (data, ep, 6);
+	if(pi!=1){
+		return 0;
+	}
+
+	void* out = calloc(0x1000);
+	pi = usb_recieve_bulk(data,out,sizeof(CommandStatusWrapper));
+	if(pi!=1){
+		return 0;
+	}
+	printk("usb_msd: recieved command status wrapper with tag %d \n",ep->tag);
+
+	// CommandStatusWrapper *csw = (CommandStatusWrapper*) (out + (512*counter));
+	// if(csw->signature!=0x53425355){
+	// 	printk("usb_msd: invalid signature!\n");
+	// 	printk("status: %x residue: %x tag: %x signature: %x \n",csw->status,csw->data_residue,csw->tag,csw->signature);
+	// 	return 0;
+	// }
+	return out;
 }
 
 uint8_t install_usb_msd(usb_interface_descriptor* desc,void *data){
@@ -103,6 +133,7 @@ uint8_t install_usb_msd(usb_interface_descriptor* desc,void *data){
 	{
 		return 0;
 	}
+	printk("usb_msd: scanning for FAT sectors now!\n");
 
 	rsb = data;
 	detect_fat();

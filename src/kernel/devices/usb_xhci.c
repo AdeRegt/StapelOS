@@ -24,15 +24,22 @@ __attribute__((interrupt)) void interrupt_xhci(interrupt_frame* frame){
 }
 
 void xhci_sleep(){
-	// printk("vendor: %x device: %x \n",xhci_vendor,xhci_device);
-	// if(xhci_vendor == 0x8086){
-		
-	// 	for(int i = 0 ; i < 80 ; i++){
-	// 		sleep(1000);
-	// 	}
-	// }else{
-		sleep(2000);
-	// }
+	// printk("-> device %x \n",xhci_device);
+	if(xhci_device==0x1E31)
+	{
+		// this is virtualbox
+		for(int i = 0 ; i < 80 ; i++)
+		{
+			sleep(1000);
+		}
+	}
+	else
+	{
+		for(int i = 0 ; i < 3 ; i++)
+		{
+			sleep(1000);
+		}
+	}
 }
 
 void xhci_dump_caplength(){
@@ -549,7 +556,7 @@ void *xhci_request_device_descriptor(USBRing *device,int deviceaddr)
 		trb1->usbcmd.bRequest = 6;
 		trb1->usbcmd.wValue = 0x100;
 		trb1->usbcmd.wIndex = 0;
-		trb1->usbcmd.wLength = 8;
+		trb1->usbcmd.wLength = sizeof(USBStandardDeviceDescriptor);
 		trb1->TRBTransferLength = 8;
 		trb1->InterrupterTarget = 0;
 		trb1->Cyclebit = 1;
@@ -560,7 +567,7 @@ void *xhci_request_device_descriptor(USBRing *device,int deviceaddr)
 		DataStageTRB *trb2 = (DataStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
 		trb2->Address1 = (uint32_t)(uint64_t) data;
 		trb2->Address2 = 0;
-		trb2->TRBTransferLength = 8;
+		trb2->TRBTransferLength = sizeof(USBStandardDeviceDescriptor);
 		trb2->Cyclebit = 1;
 		trb2->TRBType = 3;
 		trb2->Direction = 1;
@@ -589,6 +596,76 @@ void *xhci_request_device_descriptor(USBRing *device,int deviceaddr)
 				printk("coulden`t get xhci datatoken for %s \n",__func__);
 				return 0;
 		}
+}
+
+void *xhci_request_device_name(USBRing *device,int deviceaddr,USBStandardDeviceDescriptor *dev,uint8_t fun)
+{
+		void* data = calloc(0x1000);
+
+		SetupStageTRB *trb1 = (SetupStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
+		trb1->usbcmd.bRequestType = 0x80;
+		trb1->usbcmd.bRequest = 6;
+		trb1->usbcmd.wValue = (3<<8) | fun;
+		trb1->usbcmd.wIndex = 0;
+		trb1->usbcmd.wLength = 255;
+		trb1->TRBTransferLength = 8;
+		trb1->InterrupterTarget = 0;
+		trb1->Cyclebit = 1;
+		trb1->ImmediateData = 1;
+		trb1->TRBType = 2;
+		trb1->TRT = 3;
+
+		DataStageTRB *trb2 = (DataStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
+		trb2->Address1 = (uint32_t)(uint64_t) data;
+		trb2->Address2 = 0;
+		trb2->TRBTransferLength = 255;
+		trb2->Cyclebit = 1;
+		trb2->TRBType = 3;
+		trb2->Direction = 1;
+
+		StatusStageTRB *trb3 = (StatusStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
+		trb3->Cyclebit = 1;
+		trb3->InterruptOnCompletion = 1;
+		trb3->Direction = 0;
+		trb3->TRBType = 4;
+
+		StatusStageTRB *trb4 = (StatusStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer];
+		trb4->Cyclebit = 0;
+
+		volatile CommandCompletionEventTRB *res = xhci_ring_and_wait(deviceaddr,1,(uint32_t)(uint64_t)trb3);
+		if(res)
+		{
+				if(res->CompletionCode!=1)
+				{
+						xhci_resultcode_explained(res,__func__);
+						return 0;
+				}
+				return data;
+		}
+		else
+		{
+				printk("coulden`t get xhci datatoken for %s \n",__func__);
+				return 0;
+		}
+}
+
+void xhci_dump_device_name(USBRing *device,int deviceaddr,USBStandardDeviceDescriptor *dev){
+	printk("NAME: ");
+	void* ue = xhci_request_device_name(device,deviceaddr,dev,3);
+	uint8_t msglen = ((uint8_t*)ue)[0];
+	uint16_t* uu = (uint16_t*)ue;
+	for(uint8_t i = 1 ; i < msglen/2 ; i++){
+		printk("%c",uu[i]);
+	}
+	printk("\n");
+	printk("VENDOR: ");
+	ue = xhci_request_device_name(device,deviceaddr,dev,2);
+	msglen = ((uint8_t*)ue)[0];
+	uu = (uint16_t*)ue;
+	for(uint8_t i = 1 ; i < msglen/2 ; i++){
+		printk("%c",uu[i]);
+	}
+	printk("\n");
 }
 
 uint8_t xhci_request_set_config(USBRing *device,uint8_t configid)
@@ -701,7 +778,7 @@ uint8_t xhci_send_bulk(USBRing *device,void *data,int size)
 void xhci_fill_endpoint(USBSocket* socket,usb_endpoint* ep,void* ring,int id,int eptype){
 	memclear((void*)&((XHCIInputContextBuffer*)socket->dataset)->epx[id],sizeof(XHCIEndpointContext));
 	((XHCIInputContextBuffer*)socket->dataset)->epx[id].EPType = eptype;
-	((XHCIInputContextBuffer*)socket->dataset)->epx[id].MaxPacketSize = ep->wMaxPacketSize;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[id].MaxPacketSize = 1024;//ep->wMaxPacketSize;
 	((XHCIInputContextBuffer*)socket->dataset)->epx[id].Cerr = 3;
 	((XHCIInputContextBuffer*)socket->dataset)->epx[id].TRDequeuePointerLow = ((uint32_t) (uint64_t) ring)>>4 ;
 	((XHCIInputContextBuffer*)socket->dataset)->epx[id].TRDequeuePointerHigh = 0;
@@ -712,11 +789,17 @@ void xhci_test_bulk(USBSocket* socket){
 	
 	printk("Testing bulk endpoints...\n");
 	// Example: test bulk OUT and IN
-	uint8_t test_out[64] = {0xAA, 0xBB, 0xCC, 0xDD}; // Fill as needed
-	uint8_t test_in[64] = {0};
+	uint8_t test_out[31] = {
+		0x55, 0x53, 0x42, 0x43, 0x5c, 0x00, 0x00, 0x00, 0x00, 0x7e, 0x00, 0x00, 0x80, 0x00, 0x0a, 0x28,
+		0x00, 0x00, 0x01, 0xce, 0x41, 0x00, 0x00, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	}; // Fill as needed
+	uint8_t test_in[31] = {0};
 
-	int out_res = xhci_send_bulk(socket->out, (void*)0x1000, sizeof(test_out));
+	int out_res = xhci_send_bulk(socket->out, (void*)test_out, sizeof(test_out));
 	printk("Bulk OUT result $ : %d\n", out_res);
+	if(out_res!=1){
+		return;
+	}
 
 	int in_res = xhci_recieve_bulk(socket->in, test_in, sizeof(test_in));
 	printk("Bulk IN result: %d\n", in_res);
@@ -761,6 +844,7 @@ uint8_t xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_end
 
 	socket->out = ringbulkout;
 	socket->in = ringbulkin;
+	
 	return 1;
 }
 
@@ -810,6 +894,7 @@ uint8_t xhci_initialise_port(int portno)
 	{
 		return 0;
 	}
+	printk("Port %d is enabled, speed: %s, maxpacketsize: %d \n",portno,xhci_get_port_speed(portno),calculatedportspeed);
 
 	// now get a device id
 	int deviceid = xhci_get_device_id();
@@ -817,6 +902,7 @@ uint8_t xhci_initialise_port(int portno)
 	{
 		return 0;
 	}
+	printk("Device ID: %d \n",deviceid);
 
 	//
 	// Setup the other structures
@@ -863,6 +949,7 @@ uint8_t xhci_initialise_port(int portno)
 		printk("We have a fullspeed here! different maxpackagesize: %d \n",devdesc->bMaxPacketSize0);
 		return 0;
 	}
+	xhci_dump_device_name(ringinfo,deviceid,devdesc);
 
 	uint8_t* cinforaw = (uint8_t*)xhci_request_device_configuration(ringinfo,deviceid);
 	if(!cinforaw){
@@ -883,9 +970,9 @@ void xhci_check_ports()
 {
 	for(int i = 0 ; i < HCSPARAMS1_MaxPorts ;i++)
 	{
-		if( (PORTSC(i) & 1) && xhci_initialise_port(i) )
+		if(PORTSC(i) & 1)
 		{
-			return ;
+			xhci_initialise_port(i);
 		}
 	}
 }
@@ -996,7 +1083,7 @@ void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 
 	IMAN (0) = 2;
 
-	USBCMD = USBCMD | USBCMD_MASK_RS;
+	USBCMD = USBCMD | USBCMD_MASK_RS | USBCMD_MASK_INTE;
 
 	xhci_sleep();
 

@@ -29,6 +29,7 @@
         "compare": "c",
         "cstdint": "c",
         "symbols.h": "c",
-        "reflection.h": "c"
+        "reflection.h": "c",
+        "usb_hid.h": "c"
     }
 }

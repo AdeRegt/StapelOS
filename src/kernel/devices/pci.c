@@ -75,7 +75,7 @@ void check_pci_entry_for_usb(uint8_t bus,uint8_t slot,uint8_t function){
   if(interface==0x00){
     // printk("USB1.0 found, namely %x \n",interface);
   }else if(interface==0x10){
-    initialise_ohci (bus, slot, function);
+    // initialise_ohci (bus, slot, function);
   }else if(interface==0x20){
     initialise_ehci (bus, slot, function);
   }else if(interface==0x30){

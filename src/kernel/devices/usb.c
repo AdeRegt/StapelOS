@@ -135,7 +135,7 @@ usb_endpoint* getUSBEndpoint(void* info,int type){
 
 int usb_send_bulk(void* info,void* buffer,int size){
 	if(((USBSocket*)info)->usbver==3){
-		return xhci_send_bulk (((USBSocket*)info)->out,buffer,size);
+		return xhci_send_bulk (((USBSocket*)info)->in,buffer,size);
 	}else if(((USBSocket*)info)->usbver==2){
 		return ehci_send_bulk (((USBSocket*)info)->out,buffer,size);
 	}else{
@@ -148,6 +148,15 @@ int usb_recieve_bulk(void* info,void* buffer,int size){
 		return xhci_recieve_bulk (((USBSocket*)info)->in,buffer,size);
 	}else if(((USBSocket*)info)->usbver==2){
 		return ehci_recieve_bulk (((USBSocket*)info)->in,buffer,size);
+	}else{
+		printk("called %s but it is not supported!\n",__func__);for(;;);
+	}
+}
+
+void usb_test_bulk_endpoint(void* info)
+{
+	if(((USBSocket*)info)->usbver==3){
+		return xhci_test_bulk (((USBSocket*)info));
 	}else{
 		printk("called %s but it is not supported!\n",__func__);for(;;);
 	}

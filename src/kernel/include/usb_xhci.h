@@ -94,6 +94,7 @@
 #define USBCMD_MASK_HCRST     0b00000000000000000000000000000010
 #define USBCMD_SHIFT_HCRST     1
 #define USBCMD_HCRST          ( ( USBCMD & USBCMD_MASK_HCRST ) >> USBCMD_SHIFT_HCRST )
+#define USBCMD_MASK_INTE        0b00000000000000000000000000000100
 #define USBCMD_INTE           ( ( USBCMD & 0b00000000000000000000000000000100 ) >> 2 )
 #define USBCMD_HSEE           ( ( USBCMD & 0b00000000000000000000000000001000 ) >> 3 )
 #define USBCMD_LHCRST         ( ( USBCMD & 0b00000000000000000000000010000000 ) >> 7 )
@@ -414,3 +415,4 @@ usb_endpoint* xhci_get_endpoint(USBSocket* info,int type);
 uint8_t xhci_register_bulk_endpoints(USBSocket* info,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2);
 uint8_t xhci_request_set_config(USBRing *device,uint8_t configid);
 void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func);
+void xhci_test_bulk(USBSocket* socket);

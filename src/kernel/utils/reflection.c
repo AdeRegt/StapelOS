@@ -175,6 +175,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&usb_recieve_bulk)){
 		res = "usb_recieve_bulk";
 	}
+	extern void usb_test_bulk_endpoint();
+	if(input>=((uint64_t)&usb_test_bulk_endpoint)){
+		res = "usb_test_bulk_endpoint";
+	}
 	extern void usb_register_bulk_endpoints();
 	if(input>=((uint64_t)&usb_register_bulk_endpoints)){
 		res = "usb_register_bulk_endpoints";
@@ -294,6 +298,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	extern void read_sectors();
 	if(input>=((uint64_t)&read_sectors)){
 		res = "read_sectors";
+	}
+	extern void usb_stick_inquiry();
+	if(input>=((uint64_t)&usb_stick_inquiry)){
+		res = "usb_stick_inquiry";
 	}
 	extern void install_usb_msd();
 	if(input>=((uint64_t)&install_usb_msd)){
@@ -494,6 +502,14 @@ char* getSymbolnameForAddress(uint64_t input){
 	extern void xhci_request_device_descriptor();
 	if(input>=((uint64_t)&xhci_request_device_descriptor)){
 		res = "xhci_request_device_descriptor";
+	}
+	extern void xhci_request_device_name();
+	if(input>=((uint64_t)&xhci_request_device_name)){
+		res = "xhci_request_device_name";
+	}
+	extern void xhci_dump_device_name();
+	if(input>=((uint64_t)&xhci_dump_device_name)){
+		res = "xhci_dump_device_name";
 	}
 	extern void xhci_request_set_config();
 	if(input>=((uint64_t)&xhci_request_set_config)){
