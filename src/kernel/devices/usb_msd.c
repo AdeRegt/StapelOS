@@ -35,12 +35,13 @@ void *usb_stick_one_read(void *data, uint64_t sector, uint32_t counter,void* out
     ep->data[6] = 0;
     ep->data[7] = (uint8_t) ((counter >> 8) & 0xFF);
     ep->data[8] = (uint8_t) ((counter) & 0xFF);
-
+printk("sending....\n");
 	int pi = usb_send_bulk (data, ep, sizeof(CommandBlockWrapper));
 	if(pi!=1){
 		return 0;
 	}
 
+printk("recieving....\n");
 	pi = usb_recieve_bulk(data,out,sizeof(CommandStatusWrapper) + (512*counter));
 	if(pi!=1){
 		return 0;
@@ -90,6 +91,37 @@ void *usb_stick_inquiry(void *data)
 	return out;
 }
 
+uint8_t usb_msd_test_unit_ready(void *data){
+	CommandBlockWrapper *ep = usb_stick_generate_pointer();
+	ep->transferlength = 0;
+	ep->flags = 0x80;
+	ep->command_len = 6;
+	// command TEST UNIT READY(0x12)
+	ep->data[0] = 0x00;
+
+	printk("sending test unit ready command...\n");
+	int pi = usb_send_bulk (data, ep, sizeof(CommandBlockWrapper));
+	if(pi!=1){
+		return 0;
+	}
+
+	printk("recieving test unit ready response...\n");
+	void* out = calloc(0x1000);
+	pi = usb_recieve_bulk(data,out,sizeof(CommandStatusWrapper));
+	if(pi!=1){
+		return 0;
+	}
+	printk("usb_msd: recieved command status wrapper with tag %d \n",ep->tag);
+
+	CommandStatusWrapper *csw = (CommandStatusWrapper*) out;
+	if(csw->signature!=0x53425355){
+		printk("usb_msd: invalid signature!\n");
+		printk("status: %x residue: %x tag: %x signature: %x \n",csw->status,csw->data_residue,csw->tag,csw->signature);
+		return 0;
+	}
+	return csw->status==0?1:0;
+}
+
 uint8_t install_usb_msd(usb_interface_descriptor* desc,void *data){
 	// only support MSD
 	if(desc->bInterfaceClass != 0x08)
@@ -124,7 +156,7 @@ uint8_t install_usb_msd(usb_interface_descriptor* desc,void *data){
 
 	usb_endpoint *ep1 = getUSBEndpoint(data,0);
   	usb_endpoint *ep2 = getUSBEndpoint(data,1);
-
+	
 	void *localoutring = calloc(0x1000);
 	void *localinring = calloc(0x1000);
 
@@ -133,6 +165,8 @@ uint8_t install_usb_msd(usb_interface_descriptor* desc,void *data){
 	{
 		return 0;
 	}
+	printk("usb_msd: check if ready!\n");
+	usb_msd_test_unit_ready(data);
 	printk("usb_msd: scanning for FAT sectors now!\n");
 
 	rsb = data;

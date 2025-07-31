@@ -338,6 +338,10 @@ volatile CommandCompletionEventTRB *xhci_ring_and_wait(uint32_t doorbell_offset,
 			}
 			return to;
 		}
+		if(to->DataBufferPointerLo&&i==(XHCI_EVENT_RING_SIZE-1))
+		{
+			printk("warn: thingi\n");
+		}
 	}
 	goto again;
 }
@@ -503,7 +507,7 @@ void *xhci_request_device_configuration(USBRing *device,int deviceaddr)
 		trb1->usbcmd.bRequest = 6;
 		trb1->usbcmd.wValue = 0x200;
 		trb1->usbcmd.wIndex = 0;
-		trb1->usbcmd.wLength = expectedsize;
+		trb1->usbcmd.wLength = 0x1000;
 		trb1->TRBTransferLength = 8;
 		trb1->InterrupterTarget = 0;
 		trb1->Cyclebit = 1;
@@ -515,7 +519,7 @@ void *xhci_request_device_configuration(USBRing *device,int deviceaddr)
 		DataStageTRB *trb2 = (DataStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
 		trb2->Address1 = (uint32_t)(uint64_t) data;
 		trb2->Address2 = 0;
-		trb2->TRBTransferLength = expectedsize;
+		trb2->TRBTransferLength = 0x1000;
 		trb2->Cyclebit = 1;
 		trb2->TRBType = 3;
 		trb2->Direction = 1;
@@ -778,7 +782,7 @@ uint8_t xhci_send_bulk(USBRing *device,void *data,int size)
 void xhci_fill_endpoint(USBSocket* socket,usb_endpoint* ep,void* ring,int id,int eptype){
 	memclear((void*)&((XHCIInputContextBuffer*)socket->dataset)->epx[id],sizeof(XHCIEndpointContext));
 	((XHCIInputContextBuffer*)socket->dataset)->epx[id].EPType = eptype;
-	((XHCIInputContextBuffer*)socket->dataset)->epx[id].MaxPacketSize = 1024;//ep->wMaxPacketSize;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[id].MaxPacketSize = ep->wMaxPacketSize;
 	((XHCIInputContextBuffer*)socket->dataset)->epx[id].Cerr = 3;
 	((XHCIInputContextBuffer*)socket->dataset)->epx[id].TRDequeuePointerLow = ((uint32_t) (uint64_t) ring)>>4 ;
 	((XHCIInputContextBuffer*)socket->dataset)->epx[id].TRDequeuePointerHigh = 0;
@@ -814,11 +818,11 @@ void xhci_test_bulk(USBSocket* socket){
 uint8_t xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
 	//
 	// OUT endpoint direction
-	xhci_fill_endpoint(socket,ep1,ring1,0,2);
+	xhci_fill_endpoint(socket,ep1,ring1,0,ep1->bEndpointAddress & 0x80?XHCI_ENDPOINT_TYPE_BULK_IN:XHCI_ENDPOINT_TYPE_BULK_OUT);
 
 	//
 	// IN endpoint direction
-	xhci_fill_endpoint(socket,ep2,ring2,1,6);
+	xhci_fill_endpoint(socket,ep2,ring2,1,ep2->bEndpointAddress & 0x80?XHCI_ENDPOINT_TYPE_BULK_IN:XHCI_ENDPOINT_TYPE_BULK_OUT);
 
 	((XHCIInputContextBuffer*)socket->dataset)->icc.Aregisters = 0b1111;
 	((XHCIInputContextBuffer*)socket->dataset)->slotcontext.ContextEntries = 3;
@@ -828,28 +832,49 @@ uint8_t xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_end
 		return 0;
 	}
 
-	USBRing *ringbulkout = (USBRing*) calloc(0x1000);
-	ringbulkout->ring = ring1;
-	ringbulkout->pointer = 0;
-	ringbulkout->stat = 1;
-	ringbulkout->doorbelid = 2;
-	ringbulkout->deviceaddr = socket->control->deviceaddr;
+	USBRing *ringA = (USBRing*) calloc(0x1000);
+	ringA->ring = ring1;
+	ringA->pointer = 0;
+	ringA->stat = 1;
+	ringA->doorbelid = 2;
+	ringA->deviceaddr = socket->control->deviceaddr;
 
-	USBRing *ringbulkin = (USBRing*) calloc(0x1000);
-	ringbulkin->ring = ring2;
-	ringbulkin->pointer = 0;
-	ringbulkin->stat = 1;
-	ringbulkin->doorbelid = 3;
-	ringbulkin->deviceaddr = socket->control->deviceaddr;
+	USBRing *ringB = (USBRing*) calloc(0x1000);
+	ringB->ring = ring2;
+	ringB->pointer = 0;
+	ringB->stat = 1;
+	ringB->doorbelid = 3;
+	ringB->deviceaddr = socket->control->deviceaddr;
 
-	socket->out = ringbulkout;
-	socket->in = ringbulkin;
-	
+	if (ep1->bEndpointAddress & 0x80) {
+		socket->in = ringA;
+		socket->out = ringB;
+	} else {
+		socket->in = ringB;
+		socket->out = ringA;
+	}
 	return 1;
 }
 
 usb_endpoint* xhci_get_endpoint(USBSocket* info,int type){
-	return (usb_endpoint*)(((unsigned long)info->descriptors)+sizeof(usb_config_descriptor)+sizeof(usb_interface_descriptor)+(sizeof(usb_endpoint)*type));
+	uint8_t sizd = 0;
+	uint8_t* layera = (uint8_t*) (info->descriptors + sizd);
+	uint8_t did = 0;
+	while(1)
+	{
+		uint8_t bLength = layera[0];
+		uint8_t bDescriptorType = layera[1];
+		if(bDescriptorType==0x05){
+			if(did==type){
+				return (usb_endpoint*)(info->descriptors + sizd);
+			}
+			did++;
+		}
+		sizd += bLength;
+		layera = (uint8_t*) (info->descriptors + sizd);
+		
+	}
+	return (usb_endpoint*)0;
 }
 
 uint8_t xhci_initialise_port(int portno)
@@ -913,7 +938,7 @@ uint8_t xhci_initialise_port(int portno)
 	infostructures->slotcontext.ContextEntries = 1;
 	infostructures->slotcontext.Speed = portspeed;
 	infostructures->epc.LSA = 0;
-	infostructures->epc.EPType = 4;
+	infostructures->epc.EPType = XHCI_ENDPOINT_TYPE_ENDPOINTCONTEXT;
 	infostructures->epc.Cerr = 3;
 	infostructures->epc.MaxPacketSize = calculatedportspeed;
 	infostructures->epc.TRDequeuePointerLow = ((uint32_t) (uint64_t) localring)>>4 ;

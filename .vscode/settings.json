@@ -30,6 +30,7 @@
         "cstdint": "c",
         "symbols.h": "c",
         "reflection.h": "c",
-        "usb_hid.h": "c"
+        "usb_hid.h": "c",
+        "usb_msd.h": "c"
     }
 }

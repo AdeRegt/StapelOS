@@ -303,6 +303,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&usb_stick_inquiry)){
 		res = "usb_stick_inquiry";
 	}
+	extern void usb_msd_test_unit_ready();
+	if(input>=((uint64_t)&usb_msd_test_unit_ready)){
+		res = "usb_msd_test_unit_ready";
+	}
 	extern void install_usb_msd();
 	if(input>=((uint64_t)&install_usb_msd)){
 		res = "install_usb_msd";

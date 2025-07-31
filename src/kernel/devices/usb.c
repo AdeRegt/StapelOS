@@ -135,7 +135,7 @@ usb_endpoint* getUSBEndpoint(void* info,int type){
 
 int usb_send_bulk(void* info,void* buffer,int size){
 	if(((USBSocket*)info)->usbver==3){
-		return xhci_send_bulk (((USBSocket*)info)->in,buffer,size);
+		return xhci_send_bulk (((USBSocket*)info)->out,buffer,size);
 	}else if(((USBSocket*)info)->usbver==2){
 		return ehci_send_bulk (((USBSocket*)info)->out,buffer,size);
 	}else{
