@@ -20,6 +20,8 @@ PageLookupResult page_map_indexer(uint64_t virtual_address){
 }
 
 void map_memory(void* pml4mem, void *virtualmemory,void* physicalmemory){
+    virtualmemory = (void*)((uint64_t)virtualmemory & ~0x1FFFFF);
+    physicalmemory = (void*)((uint64_t)physicalmemory & ~0x1FFFFF);
     PageLookupResult lookup = page_map_indexer((uint64_t)virtualmemory);
     PageTable* PLM4 = (PageTable*) pml4mem;
     Page PDE = PLM4->pages[lookup.page_map_level_4_table_index];

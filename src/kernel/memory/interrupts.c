@@ -8,6 +8,7 @@
 #include "../include/gdt.h"
 #include "../include/reflection.h"
 #include "../include/memory.h"
+#include "../include/ioapic.h"
 
 __attribute__ ((aligned(0x1000))) static IDTR idtr;
 __attribute__ ((aligned(0x1000))) static IDTDescEntry idt[256];
@@ -262,6 +263,9 @@ void setRawInterrupt(int offset,void *fun){
   interrupt_set_offset(int_PageFault,(uint64_t)fun);
   int_PageFault->type_attr = IDT_TA_TrapGate;
   int_PageFault->selector = GDT_KERNEL_CODE_SEGMENT;
+  if(ioapic_is_enabled()){
+    ioapic_set_redirection(offset-INT_OFFSET, offset, 0, 0);
+  }
 }
 
 void setInterrupt(int offset,void *fun){

@@ -158,7 +158,6 @@ void initialise_apic(){
         printk("Unexpected APIC base! Expected %x found %x \n",EXPECTED_APIC_BASE,apicbase);
         return ;
     }
-    apic_get_interrupt_number();
     set_lvt_cmci_register(0x10,0b101,0,0);
     set_lvt_timer_register(0x21,0,0,1);
     set_lvt_termal_monitor_register(0x12,0b101,0,0);

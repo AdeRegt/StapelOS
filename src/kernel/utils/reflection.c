@@ -715,6 +715,30 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&initialise_graphics_driver)){
 		res = "initialise_graphics_driver";
 	}
+	extern void get_ioapic_base();
+	if(input>=((uint64_t)&get_ioapic_base)){
+		res = "get_ioapic_base";
+	}
+	extern void acpi_scan_for_rsdp();
+	if(input>=((uint64_t)&acpi_scan_for_rsdp)){
+		res = "acpi_scan_for_rsdp";
+	}
+	extern void acpi_dump_rsdp();
+	if(input>=((uint64_t)&acpi_dump_rsdp)){
+		res = "acpi_dump_rsdp";
+	}
+	extern void acpi_dump_xsdt();
+	if(input>=((uint64_t)&acpi_dump_xsdt)){
+		res = "acpi_dump_xsdt";
+	}
+	extern void parse_apic_table();
+	if(input>=((uint64_t)&parse_apic_table)){
+		res = "parse_apic_table";
+	}
+	extern void initialise_acpi();
+	if(input>=((uint64_t)&initialise_acpi)){
+		res = "initialise_acpi";
+	}
 	extern void get_apic_base();
 	if(input>=((uint64_t)&get_apic_base)){
 		res = "get_apic_base";
@@ -1110,6 +1134,22 @@ char* getSymbolnameForAddress(uint64_t input){
 	extern void initialise_interrupts();
 	if(input>=((uint64_t)&initialise_interrupts)){
 		res = "initialise_interrupts";
+	}
+	extern void ioapic_is_enabled();
+	if(input>=((uint64_t)&ioapic_is_enabled)){
+		res = "ioapic_is_enabled";
+	}
+	extern void ioapic_write();
+	if(input>=((uint64_t)&ioapic_write)){
+		res = "ioapic_write";
+	}
+	extern void ioapic_read();
+	if(input>=((uint64_t)&ioapic_read)){
+		res = "ioapic_read";
+	}
+	extern void ioapic_set_redirection();
+	if(input>=((uint64_t)&ioapic_set_redirection)){
+		res = "ioapic_set_redirection";
 	}
 	extern void getMemoryInfoBlockCount();
 	if(input>=((uint64_t)&getMemoryInfoBlockCount)){

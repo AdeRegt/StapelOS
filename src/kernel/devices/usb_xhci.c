@@ -33,6 +33,14 @@ void xhci_sleep(){
 			sleep(1000);
 		}
 	}
+	else if(xhci_device==0xD)
+	{
+		// this is qemu
+		for(int i = 0 ; i < 100 ; i++)
+		{
+			sleep(1000);
+		}
+	}
 	else
 	{
 		for(int i = 0 ; i < 3 ; i++)
