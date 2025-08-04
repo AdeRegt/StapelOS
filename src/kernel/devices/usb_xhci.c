@@ -17,6 +17,7 @@ uint16_t xhci_device;
 
 __attribute__((interrupt)) void interrupt_xhci(interrupt_frame* frame){
 	printk("xhciint %x \n",USBSTS);
+	cli();hlt();
 	IMAN(0) = 3;
 	USBSTS = USBSTS;
 	outportb(0xA0,0x20);

@@ -5,6 +5,7 @@
 
 void *rsdp;
 void *ioapic_base;
+void *rsdp_address_from_bootloader;
 
 void *get_ioapic_base(){
     return ioapic_base;
@@ -17,7 +18,14 @@ void* acpi_scan_for_rsdp(){
             return (void*)addr;
         }
     }
-    return 0; // RSDP not found
+    uint16_t ebda_segment = *(volatile uint16_t*)0x40E;
+    uint32_t ebda_address = (uint32_t)ebda_segment << 4; // Physical address
+    for(uintptr_t addr = ebda_address; addr < ebda_address + 0x400; addr += 16){
+        if(*(uint64_t*)addr == ROOT_SYSTEM_DESCRIPTION_POINTER_SIGNATURE){
+            return (void*)addr;
+        }
+    }
+    return rsdp_address_from_bootloader; // RSDP not found
 }
 
 void acpi_dump_rsdp(RSDPDescriptor* rsdp){
@@ -66,7 +74,9 @@ ACPISDTHeader* parse_apic_table(ACPISDTHeader* xsdt, uint8_t* signature) {
     return (ACPISDTHeader*) 0;
 }
 
-void initialise_acpi(){
+void initialise_acpi(void* rsdp_address_from_bootloader_arg) {
+    rsdp_address_from_bootloader = rsdp_address_from_bootloader_arg;
+    printk("Initialising ACPI rsdp from bootloader: %x ...\n",rsdp_address_from_bootloader);
     rsdp = acpi_scan_for_rsdp();
     if(!rsdp){
         printk("ACPI RSDP not found!\n");

@@ -37,5 +37,5 @@ typedef struct {
     // ...fields depending on type
 } __attribute__((packed)) MADTEntry;
 
-void initialise_acpi();
+void initialise_acpi(void* rsdp_address_from_bootloader_arg);
 void *get_ioapic_base();
