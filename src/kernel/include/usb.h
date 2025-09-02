@@ -115,3 +115,4 @@ void usb_dump_device_descriptor(USBStandardDeviceDescriptor* desc);
 void usb_dump_device_type_from_interface(usb_interface_descriptor* desc);
 void usb_dump_device_endpoint(usb_endpoint *dev);
 void usb_test_bulk_endpoint(void* info);
+uint8_t usb_request_localcommand(void *info,uint8_t bRequestType,uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t wLength, uint32_t address);

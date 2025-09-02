@@ -76,7 +76,6 @@ ACPISDTHeader* parse_apic_table(ACPISDTHeader* xsdt, uint8_t* signature) {
 
 void initialise_acpi(void* rsdp_address_from_bootloader_arg) {
     rsdp_address_from_bootloader = rsdp_address_from_bootloader_arg;
-    printk("Initialising ACPI rsdp from bootloader: %x ...\n",rsdp_address_from_bootloader);
     rsdp = acpi_scan_for_rsdp();
     if(!rsdp){
         printk("ACPI RSDP not found!\n");
@@ -104,7 +103,8 @@ void initialise_acpi(void* rsdp_address_from_bootloader_arg) {
     while (maxtries-- && madt_ptr < ((uint8_t*)hdr + madt_length)) {
         MADTEntry* entry = (MADTEntry*)madt_ptr;
         if (entry->Type == 1) { // IOAPIC
-            ioapic_base = (void*)(uint64_t)*(uint32_t*)(madt_ptr + 4);
+            MADTEntryType1* ioapic_entry = (MADTEntryType1*)entry;
+            ioapic_base = (void*)(uint64_t)(ioapic_entry->IOAPICAddress);
             define_linear_memory_block(ioapic_base);
             return;
         }

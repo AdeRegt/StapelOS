@@ -1,5 +1,7 @@
 #include "usb.h"
 
+#define GET_MAX_LUN 0xFE
+
 typedef struct {
     uint32_t signature;
     uint32_t tag;

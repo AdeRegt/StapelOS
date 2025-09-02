@@ -57,5 +57,5 @@ void initialise_timer(){
   if(!check_apic()){
     resetTimer();
   }
-  setInterrupt (0, timer_int);
+  setInterrupt (0+(check_apic()?1:0), timer_int);
 }

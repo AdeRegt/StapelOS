@@ -7,11 +7,7 @@
             "label": "Build and create medium",
             "type": "shell",
             "command": "make all install",
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
+            "problemMatcher": []
         },
         {
             "label": "Launch QEMU",
@@ -21,7 +17,11 @@
         {
             "label": "Launch VBOX",
             "type": "shell",
-            "command": "make all install && VBoxManage startvm \"usbd\" "
+            "command": "make all install && VBoxManage startvm \"StapelOS\" ",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "Launch QEMU with USB",

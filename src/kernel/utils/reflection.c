@@ -183,6 +183,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&usb_register_bulk_endpoints)){
 		res = "usb_register_bulk_endpoints";
 	}
+	extern void usb_request_localcommand();
+	if(input>=((uint64_t)&usb_request_localcommand)){
+		res = "usb_request_localcommand";
+	}
 	extern void usb_request_set_config();
 	if(input>=((uint64_t)&usb_request_set_config)){
 		res = "usb_request_set_config";
@@ -367,6 +371,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&initialise_ohci)){
 		res = "initialise_ohci";
 	}
+	extern void xhci_raw_interrupt_handler();
+	if(input>=((uint64_t)&xhci_raw_interrupt_handler)){
+		res = "xhci_raw_interrupt_handler";
+	}
 	extern void interrupt_xhci();
 	if(input>=((uint64_t)&interrupt_xhci)){
 		res = "interrupt_xhci";
@@ -519,6 +527,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&xhci_request_set_config)){
 		res = "xhci_request_set_config";
 	}
+	extern void xhci_control_ring_send();
+	if(input>=((uint64_t)&xhci_control_ring_send)){
+		res = "xhci_control_ring_send";
+	}
 	extern void xhci_recieve_bulk();
 	if(input>=((uint64_t)&xhci_recieve_bulk)){
 		res = "xhci_recieve_bulk";
@@ -526,10 +538,6 @@ char* getSymbolnameForAddress(uint64_t input){
 	extern void xhci_send_bulk();
 	if(input>=((uint64_t)&xhci_send_bulk)){
 		res = "xhci_send_bulk";
-	}
-	extern void xhci_fill_endpoint();
-	if(input>=((uint64_t)&xhci_fill_endpoint)){
-		res = "xhci_fill_endpoint";
 	}
 	extern void xhci_test_bulk();
 	if(input>=((uint64_t)&xhci_test_bulk)){
@@ -1150,6 +1158,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	extern void ioapic_set_redirection();
 	if(input>=((uint64_t)&ioapic_set_redirection)){
 		res = "ioapic_set_redirection";
+	}
+	extern void ioapic_dump_redirection_table();
+	if(input>=((uint64_t)&ioapic_dump_redirection_table)){
+		res = "ioapic_dump_redirection_table";
 	}
 	extern void getMemoryInfoBlockCount();
 	if(input>=((uint64_t)&getMemoryInfoBlockCount)){

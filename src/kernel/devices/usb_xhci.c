@@ -15,13 +15,14 @@ int command_ring_pointer;
 uint16_t xhci_vendor;
 uint16_t xhci_device;
 
-__attribute__((interrupt)) void interrupt_xhci(interrupt_frame* frame){
+void xhci_raw_interrupt_handler(){
 	printk("xhciint %x \n",USBSTS);
-	cli();hlt();
-	IMAN(0) = 3;
-	USBSTS = USBSTS;
-	outportb(0xA0,0x20);
-	outportb(0x20,0x20);
+	interrupt_eoi();
+	IMAN(0) |= 3;
+}
+
+__attribute__((interrupt)) void interrupt_xhci(interrupt_frame* frame){
+	xhci_raw_interrupt_handler();
 }
 
 void xhci_sleep(){
@@ -29,7 +30,7 @@ void xhci_sleep(){
 	if(xhci_device==0x1E31)
 	{
 		// this is virtualbox
-		for(int i = 0 ; i < 80 ; i++)
+		for(int i = 0 ; i < 10 ; i++)
 		{
 			sleep(1000);
 		}
@@ -717,6 +718,54 @@ uint8_t xhci_request_set_config(USBRing *device,uint8_t configid)
     }
 }
 
+uint8_t xhci_control_ring_send(USBRing *device,uint8_t bRequestType,uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t wLength, uint32_t address)
+{
+    SetupStageTRB *trb1 = (SetupStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
+	trb1->usbcmd.bRequestType = bRequestType;
+    trb1->usbcmd.bRequest = bRequest;
+    trb1->usbcmd.wValue = wValue;
+    trb1->usbcmd.wIndex = wIndex;
+    trb1->usbcmd.wLength = wLength;
+    trb1->TRBTransferLength = 8;
+    trb1->InterrupterTarget = 0;
+    trb1->Cyclebit = 1;
+    trb1->ImmediateData = 1;
+    trb1->TRBType = 2;
+    trb1->TRT = 3;
+
+	if(wLength){
+		DataStageTRB *trb2 = (DataStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
+		trb2->Address1 = address;
+		trb2->Address2 = 0;
+		trb2->TRBTransferLength = wLength;
+		trb2->Cyclebit = 1;
+		trb2->TRBType = 3;
+		trb2->Direction = (bRequestType & 0x80)?1:0;
+		// trb2->InterruptOnCompletion = 1;
+	}
+
+    StatusStageTRB *trb3 = (StatusStageTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
+    trb3->Cyclebit = 1;
+    trb3->InterruptOnCompletion = 1;
+    trb3->Direction = 1;
+    trb3->TRBType = 4;
+
+    volatile CommandCompletionEventTRB *res = xhci_ring_and_wait(device->deviceaddr,device->doorbelid,(uint32_t)(uint64_t)trb3);
+    if(res)
+    {
+        if(res->CompletionCode!=1)
+        {
+            return xhci_resultcode_explained(res,__func__);
+        }
+        return 1;
+    }
+    else
+    {
+        printk("coulden`t get xhci datatoken for %s \n",__func__);
+        return 0;
+    }
+}
+
 uint8_t xhci_recieve_bulk(USBRing *device,void *data,int size)
 {
     TransferTRB *trb1 = (TransferTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
@@ -753,24 +802,23 @@ uint8_t xhci_recieve_bulk(USBRing *device,void *data,int size)
 }
 
 uint8_t xhci_send_bulk(USBRing *device,void *data,int size)
-{
+{	printk("sending %d bytes to device %d and the data is at address %x \n",size,device->deviceaddr,data);
     TransferTRB *trb1 = (TransferTRB*) & ((DefaultTRB*)device->ring)[device->pointer++];
     trb1->DataBufferPointerLo = (uint32_t)((uint64_t)data);
-    trb1->DataBufferPointerHi = 0;
+    trb1->DataBufferPointerHi = (uint32_t)(((uint64_t)data) >> 32);
     trb1->BlockEventInterrupt = 0;
     trb1->Chainbit = 0;
-    trb1->Cyclebit = 1;
+    trb1->Cyclebit = device->stat;
     trb1->EvaluateNextTRB = 0;
     trb1->ImmediateData = 0;
     trb1->InterrupterTarget = 0;
-    // trb1->NoSnoop = 1;
     trb1->TDSize = 0;
     trb1->TRBTransferLength = size;
     trb1->TRBType = 1;
     trb1->InterruptOnCompletion = 1;
 
-    EventDataTRB *trb3 = (EventDataTRB*) & ((DefaultTRB*)device->ring)[device->pointer];
-    trb3->Cyclebit = 0;
+    // EventDataTRB *trb3 = (EventDataTRB*) & ((DefaultTRB*)device->ring)[device->pointer];
+    // trb3->Cyclebit = 0;
 
     volatile CommandCompletionEventTRB *res = xhci_ring_and_wait(device->deviceaddr,device->doorbelid,(uint32_t)(uint64_t)trb1);
     if(res)
@@ -788,16 +836,6 @@ uint8_t xhci_send_bulk(USBRing *device,void *data,int size)
     }
 }
 
-void xhci_fill_endpoint(USBSocket* socket,usb_endpoint* ep,void* ring,int id,int eptype){
-	memclear((void*)&((XHCIInputContextBuffer*)socket->dataset)->epx[id],sizeof(XHCIEndpointContext));
-	((XHCIInputContextBuffer*)socket->dataset)->epx[id].EPType = eptype;
-	((XHCIInputContextBuffer*)socket->dataset)->epx[id].MaxPacketSize = ep->wMaxPacketSize;
-	((XHCIInputContextBuffer*)socket->dataset)->epx[id].Cerr = 3;
-	((XHCIInputContextBuffer*)socket->dataset)->epx[id].TRDequeuePointerLow = ((uint32_t) (uint64_t) ring)>>4 ;
-	((XHCIInputContextBuffer*)socket->dataset)->epx[id].TRDequeuePointerHigh = 0;
-	((XHCIInputContextBuffer*)socket->dataset)->epx[id].DequeueCycleState = 1;
-}
-
 void xhci_test_bulk(USBSocket* socket){
 	
 	printk("Testing bulk endpoints...\n");
@@ -808,7 +846,7 @@ void xhci_test_bulk(USBSocket* socket){
 	}; // Fill as needed
 	uint8_t test_in[31] = {0};
 
-	int out_res = xhci_send_bulk(socket->out, (void*)test_out, sizeof(test_out));
+	int out_res = xhci_send_bulk(socket->out, (void*)test_out, 31);
 	printk("Bulk OUT result $ : %d\n", out_res);
 	if(out_res!=1){
 		return;
@@ -827,11 +865,23 @@ void xhci_test_bulk(USBSocket* socket){
 uint8_t xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
 	//
 	// OUT endpoint direction
-	xhci_fill_endpoint(socket,ep1,ring1,0,ep1->bEndpointAddress & 0x80?XHCI_ENDPOINT_TYPE_BULK_IN:XHCI_ENDPOINT_TYPE_BULK_OUT);
+	memclear((void*)&((XHCIInputContextBuffer*)socket->dataset)->epx[0],sizeof(XHCIEndpointContext));
+	((XHCIInputContextBuffer*)socket->dataset)->epx[0].EPType = ep1->bEndpointAddress & 0x80?XHCI_ENDPOINT_TYPE_BULK_IN:XHCI_ENDPOINT_TYPE_BULK_OUT;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[0].MaxPacketSize = ep1->wMaxPacketSize;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[0].Cerr = 3;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[0].TRDequeuePointerLow = ((uint32_t) (uint64_t) ring1)>>4 ;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[0].TRDequeuePointerHigh = 0;//((uint32_t) (((uint64_t) ring1)>>32)) ;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[0].DequeueCycleState = 1;
 
 	//
 	// IN endpoint direction
-	xhci_fill_endpoint(socket,ep2,ring2,1,ep2->bEndpointAddress & 0x80?XHCI_ENDPOINT_TYPE_BULK_IN:XHCI_ENDPOINT_TYPE_BULK_OUT);
+	memclear((void*)&((XHCIInputContextBuffer*)socket->dataset)->epx[1],sizeof(XHCIEndpointContext));
+	((XHCIInputContextBuffer*)socket->dataset)->epx[1].EPType = ep2->bEndpointAddress & 0x80?XHCI_ENDPOINT_TYPE_BULK_IN:XHCI_ENDPOINT_TYPE_BULK_OUT;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[1].MaxPacketSize = ep2->wMaxPacketSize;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[1].Cerr = 3;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[1].TRDequeuePointerLow = ((uint32_t) (uint64_t) ring2)>>4 ;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[1].TRDequeuePointerHigh = 0;//((uint32_t) (((uint64_t) ring2)>>32)) ;
+	((XHCIInputContextBuffer*)socket->dataset)->epx[1].DequeueCycleState = 1;
 
 	((XHCIInputContextBuffer*)socket->dataset)->icc.Aregisters = 0b1111;
 	((XHCIInputContextBuffer*)socket->dataset)->slotcontext.ContextEntries = 3;

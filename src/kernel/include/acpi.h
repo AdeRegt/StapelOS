@@ -37,5 +37,13 @@ typedef struct {
     // ...fields depending on type
 } __attribute__((packed)) MADTEntry;
 
+typedef struct {
+    MADTEntry Header;
+    uint8_t IOAPICId;
+    uint8_t Reserved;
+    uint32_t IOAPICAddress; // 32-bit address of the IOAPIC
+    uint32_t GlobalSystemInterruptBase; // Base for global system interrupts
+} __attribute__((packed)) MADTEntryType1;
+
 void initialise_acpi(void* rsdp_address_from_bootloader_arg);
 void *get_ioapic_base();

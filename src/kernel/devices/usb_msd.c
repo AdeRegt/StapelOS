@@ -93,7 +93,7 @@ void *usb_stick_inquiry(void *data)
 
 uint8_t usb_msd_test_unit_ready(void *data){
 	CommandBlockWrapper *ep = usb_stick_generate_pointer();
-	ep->transferlength = 0;
+	ep->transferlength = 0x20;
 	ep->flags = 0x80;
 	ep->command_len = 6;
 	// command TEST UNIT READY(0x12)
@@ -148,23 +148,37 @@ uint8_t install_usb_msd(usb_interface_descriptor* desc,void *data){
 		return 0;
 	}
 
-	uint8_t res = usb_request_set_config(data,1);
+	uint8_t res;
+
+	res = usb_request_set_config(data,1);
 	if(res!=1)
 	{
 		return 0;
 	}
+ 
+	uint8_t* maxlundata = (uint8_t*) calloc(0x1000);
+	res = usb_request_localcommand(data,0xA1, GET_MAX_LUN,0,0,1,(uint32_t)(uint64_t)maxlundata);
+	if(res!=1)
+	{
+		return 0;
+	}
+	printk("Max LUN is %d \n",maxlundata[0]);
 
 	usb_endpoint *ep1 = getUSBEndpoint(data,0);
   	usb_endpoint *ep2 = getUSBEndpoint(data,1);
 	
-	void *localoutring = calloc(0x1000);
-	void *localinring = calloc(0x1000);
+	void *localoutring = (void*) 0x1000;//calloc(0x1000);
+	void *localinring = (void*) 0x2000;//calloc(0x1000);
 
+	printk("Trying to install bulk at %x %x \n",localoutring,localinring);
 	res = usb_register_bulk_endpoints(data,ep1,ep2,localoutring,localinring);
 	if(res!=1)
 	{
 		return 0;
 	}
+
+	printk("usb_msd: testing (debugging)!\n");
+	usb_test_bulk_endpoint(data);
 	printk("usb_msd: check if ready!\n");
 	usb_msd_test_unit_ready(data);
 	printk("usb_msd: scanning for FAT sectors now!\n");

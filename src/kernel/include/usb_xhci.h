@@ -426,3 +426,4 @@ uint8_t xhci_register_bulk_endpoints(USBSocket* info,usb_endpoint* ep1,usb_endpo
 uint8_t xhci_request_set_config(USBRing *device,uint8_t configid);
 void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func);
 void xhci_test_bulk(USBSocket* socket);
+uint8_t xhci_control_ring_send(USBRing *device,uint8_t bRequestType,uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t wLength, uint32_t address);

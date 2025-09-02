@@ -172,6 +172,18 @@ uint8_t usb_register_bulk_endpoints(void* info,usb_endpoint* ep1,usb_endpoint* e
 	}
 }
 
+uint8_t usb_request_localcommand(void *info,uint8_t bRequestType,uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint16_t wLength, uint32_t address){
+	if(((USBSocket*)info)->usbver==3){
+		return xhci_control_ring_send(((USBSocket*)info)->control, bRequestType, bRequest, wValue, wIndex, wLength,address);
+	}
+	// else if(((USBSocket*)info)->usbver==2){
+	// 	return ehci_request_set_config (((USBSocket*)info)->control, configid);
+	// }
+	else{
+		printk("called %s but it is not supported!\n",__func__);for(;;);
+	}
+}
+
 uint8_t usb_request_set_config(void *info,uint8_t configid){
 	if(((USBSocket*)info)->usbver==3){
 		return xhci_request_set_config (((USBSocket*)info)->control, configid);

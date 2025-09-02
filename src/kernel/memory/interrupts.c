@@ -248,8 +248,14 @@ __attribute__((interrupt)) void GeneralFault_Handler(interrupt_frame* frame){
 }
 
 __attribute__((interrupt)) void NakedInterruptHandler(interrupt_frame* frame){
-  printk("Interrupt %x fired!\n",interrupt_get_int_number());
-	interrupt_eoi();
+  uint8_t int_number = interrupt_get_int_number();
+  if(int_number == 0x20 || int_number == 0x21) {
+    // This is a PIC interrupt, handle it
+    interrupt_eoi();
+    return;
+  }
+  printk("Interrupt %x fired!\n",int_number);
+  interrupt_eoi();
 }
 
 void interrupt_set_offset(IDTDescEntry* int_PageFault,uint64_t offset){
@@ -263,13 +269,13 @@ void setRawInterrupt(int offset,void *fun){
   interrupt_set_offset(int_PageFault,(uint64_t)fun);
   int_PageFault->type_attr = IDT_TA_TrapGate;
   int_PageFault->selector = GDT_KERNEL_CODE_SEGMENT;
-  if(ioapic_is_enabled()){
-    ioapic_set_redirection(offset-INT_OFFSET, offset, 0, 0);
+  if(ioapic_is_enabled()&&INT_OFFSET>= offset){
+    ioapic_set_redirection(offset-INT_OFFSET, offset-INT_OFFSET, 0, 0);
   }
 }
 
 void setInterrupt(int offset,void *fun){
-  setRawInterrupt(INT_OFFSET+offset+(check_apic()?1:0),fun);
+  setRawInterrupt(INT_OFFSET+offset,fun);
 }
 
 void interrupts_disable(){
