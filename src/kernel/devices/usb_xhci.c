@@ -38,7 +38,7 @@ void xhci_sleep(){
 	else if(xhci_device==0xD)
 	{
 		// this is qemu
-		for(int i = 0 ; i < 100 ; i++)
+		for(int i = 0 ; i < 500 ; i++)
 		{
 			sleep(1000);
 		}
@@ -808,19 +808,20 @@ uint8_t xhci_send_bulk(USBRing *device,void *data,int size)
     trb1->DataBufferPointerHi = (uint32_t)(((uint64_t)data) >> 32);
     trb1->BlockEventInterrupt = 0;
     trb1->Chainbit = 0;
-    trb1->Cyclebit = device->stat;
+    trb1->Cyclebit = 1;
     trb1->EvaluateNextTRB = 0;
     trb1->ImmediateData = 0;
     trb1->InterrupterTarget = 0;
     trb1->TDSize = 0;
-    trb1->TRBTransferLength = size;
+    trb1->TRBTransferLength = 0;
     trb1->TRBType = 1;
     trb1->InterruptOnCompletion = 1;
+	trb1->EndpointAddress = 0x81;
 
-    // EventDataTRB *trb3 = (EventDataTRB*) & ((DefaultTRB*)device->ring)[device->pointer];
-    // trb3->Cyclebit = 0;
+    EventDataTRB *trb3 = (EventDataTRB*) & ((DefaultTRB*)device->ring)[device->pointer];
+    trb3->Cyclebit = 0;
 
-    volatile CommandCompletionEventTRB *res = xhci_ring_and_wait(device->deviceaddr,device->doorbelid,(uint32_t)(uint64_t)trb1);
+    volatile CommandCompletionEventTRB *res = xhci_ring_and_wait(device->deviceaddr,2,(uint32_t)(uint64_t)trb1);
     if(res)
     {
         if(res->CompletionCode!=1)
@@ -840,13 +841,10 @@ void xhci_test_bulk(USBSocket* socket){
 	
 	printk("Testing bulk endpoints...\n");
 	// Example: test bulk OUT and IN
-	uint8_t test_out[31] = {
-		0x55, 0x53, 0x42, 0x43, 0x5c, 0x00, 0x00, 0x00, 0x00, 0x7e, 0x00, 0x00, 0x80, 0x00, 0x0a, 0x28,
-		0x00, 0x00, 0x01, 0xce, 0x41, 0x00, 0x00, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-	}; // Fill as needed
+	uint8_t test_out[512] = {}; // Fill as needed
 	uint8_t test_in[31] = {0};
 
-	int out_res = xhci_send_bulk(socket->out, (void*)test_out, 31);
+	int out_res = xhci_send_bulk(socket->out, (void*)test_out, 512);
 	printk("Bulk OUT result $ : %d\n", out_res);
 	if(out_res!=1){
 		return;
@@ -863,6 +861,7 @@ void xhci_test_bulk(USBSocket* socket){
 }
 
 uint8_t xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_endpoint* ep2,void* ring1,void* ring2){
+
 	//
 	// OUT endpoint direction
 	memclear((void*)&((XHCIInputContextBuffer*)socket->dataset)->epx[0],sizeof(XHCIEndpointContext));
@@ -895,22 +894,25 @@ uint8_t xhci_register_bulk_endpoints(USBSocket* socket,usb_endpoint* ep1,usb_end
 	ringA->ring = ring1;
 	ringA->pointer = 0;
 	ringA->stat = 1;
-	ringA->doorbelid = 2;
 	ringA->deviceaddr = socket->control->deviceaddr;
 
 	USBRing *ringB = (USBRing*) calloc(0x1000);
 	ringB->ring = ring2;
 	ringB->pointer = 0;
 	ringB->stat = 1;
-	ringB->doorbelid = 3;
+	ringB->doorbelid = 2;
 	ringB->deviceaddr = socket->control->deviceaddr;
 
-	if (ep1->bEndpointAddress & 0x80) {
+	if (ep1->bEndpointAddress==0x81) {
 		socket->in = ringA;
 		socket->out = ringB;
+		ringA->doorbelid = 1;
+		ringB->doorbelid = 2;
 	} else {
 		socket->in = ringB;
 		socket->out = ringA;
+		ringA->doorbelid = 2;
+		ringB->doorbelid = 1;
 	}
 	return 1;
 }

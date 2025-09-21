@@ -1,2 +1,2 @@
 FS0:
-efi/boot/bootx64.efi
+EFI/boot/bootx64.efi

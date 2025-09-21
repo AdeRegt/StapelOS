@@ -241,6 +241,7 @@ typedef struct{
     uint16_t BlockEventInterrupt:1;
     uint16_t TRBType:6;
     uint16_t RsvdZ2:16;
+    uint8_t EndpointAddress;       // Endpoint address (e.g., 0x81 for Bulk IN, 0x02 for Bulk OUT)
 }__attribute__((packed))TransferTRB;
 
 typedef struct{
@@ -394,6 +395,7 @@ typedef struct{
     XHCIEndpointContext epc;
     XHCIEndpointContext epx[15];
 }__attribute__((packed)) XHCIInputContextBuffer;
+
 
 typedef struct{
     uint32_t DataBufferPointerLo;

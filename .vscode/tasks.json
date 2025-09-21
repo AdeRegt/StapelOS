@@ -17,7 +17,7 @@
         {
             "label": "Launch VBOX",
             "type": "shell",
-            "command": "make all install && VBoxManage startvm \"StapelOS\" ",
+            "command": "make all install && VirtualBoxVM --startvm \"StapelOS\" --debug-command-line ",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -26,7 +26,7 @@
         {
             "label": "Launch QEMU with USB",
             "type": "shell",
-            "command": "make all install && qemu-system-x86_64 -cdrom ./media/efi_grub_cdrom.iso -device qemu-xhci,id=usb,bus=pci.0,addr=0x4 -device usb-host,hostbus=3,hostport=4 -device usb-host,hostbus=3,hostport=3"
+            "command": "make all install && sudo qemu-system-x86_64 -boot order=d -device qemu-xhci,id=xhci -device usb-host,bus=xhci.0,vendorid=0x0951,productid=0x1666 -drive if=pflash,format=raw,readonly=on,file=/usr/share/ovmf/OVMF.fd"
         }
     ]
 }

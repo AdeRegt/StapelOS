@@ -179,9 +179,6 @@ uint8_t install_usb_msd(usb_interface_descriptor* desc,void *data){
 
 	printk("usb_msd: testing (debugging)!\n");
 	usb_test_bulk_endpoint(data);
-	printk("usb_msd: check if ready!\n");
-	usb_msd_test_unit_ready(data);
-	printk("usb_msd: scanning for FAT sectors now!\n");
 
 	rsb = data;
 	detect_fat();
