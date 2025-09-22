@@ -151,9 +151,15 @@ int get_model(void){
 
 /* Example: Check for builtin local APIC. */
 int check_apic(void){
+    #if defined(STAPELOS_USE_APIC) || defined(STAPELOS_USE_MSIX)
     unsigned int eax, unused, edx;
     __get_cpuid(1, &eax, &unused, &unused, &edx);
     return edx & (1 << 9);
+    #elif defined(STAPELOS_USE_LEGACY_PIC)
+    return 0;
+    #else 
+    #error "Either STAPELOS_USE_APIC , STAPELOS_USE_MSIX or STAPELOS_USE_LEGACY_PIC must be defined"
+    #endif 
 }
 
 void cpuid(int code, uint32_t *a, uint32_t *d) {

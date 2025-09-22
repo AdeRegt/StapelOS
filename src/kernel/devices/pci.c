@@ -113,3 +113,15 @@ void initialise_pci(){
     }
   }
 }
+
+uint8_t pci_has_capabilities(uint8_t bus, uint8_t slot, uint8_t function){
+    uint16_t status = pciConfigReadWord(bus,slot,function,0x06);
+    return (status & 0x10) != 0;
+}
+
+uint8_t pci_get_capability_pointer(uint8_t bus, uint8_t slot, uint8_t function){
+    if(!pci_has_capabilities(bus,slot,function)){
+        return 0;
+    }
+    return pciConfigReadByte(bus,slot,function,0x34);
+}

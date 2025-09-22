@@ -147,6 +147,12 @@ uint8_t apic_get_interrupt_number(){
     return 0;
 }
 
+void apic_fire(uint8_t vector){
+    // Send an IPI (interrupt) to self
+    write_apic_register(0x310, 0);      // Destination = self
+    write_apic_register(0x300, 0x00004000 | vector); // Fixed delivery, vector 0x50
+}
+
 void initialise_apic(){
     //
     // According to osdev.org, the local APIC is enabled at boot time, we just need to find it...

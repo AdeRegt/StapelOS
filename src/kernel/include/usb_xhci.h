@@ -2,6 +2,10 @@
 #include <stdint.h>
 #include "usb.h"
 
+#if !defined(STAPELOS_XHCI_USE_INTERRUPTS) && !defined(STAPELOS_XHCI_POLLING)
+#error "Either STAPELOS_XHCI_USE_INTERRUPTS or STAPELOS_XHCI_POLLING must be defined"
+#endif 
+
 #define CAPLENGTH ((uint8_t*)base_xhci_address)[0]
 #define HCIVERSION ((uint16_t*)( base_xhci_address + 0x02 ))[0]
 #define HCSPARAMS1 ((uint32_t*)( base_xhci_address + 0x04 ))[0]

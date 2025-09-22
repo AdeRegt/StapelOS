@@ -24,3 +24,5 @@ void install_interrupt_from_pci(uint8_t bus,uint8_t slot,uint8_t function,void *
 void pciConfigWriteWord (uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint16_t value);
 void pciConfigWriteDWord(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint32_t value);
 void pci_enable_busmastering(uint8_t bus, uint8_t slot, uint8_t func);
+uint8_t pci_has_capabilities(uint8_t bus, uint8_t slot, uint8_t function);
+uint8_t pci_get_capability_pointer(uint8_t bus, uint8_t slot, uint8_t function);

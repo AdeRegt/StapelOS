@@ -11,3 +11,4 @@ void initialise_apic();
 void apic_eoi();
 void set_apic_timer_values(uint32_t vals);
 uint8_t apic_get_interrupt_number();
+void apic_fire(uint8_t vector);

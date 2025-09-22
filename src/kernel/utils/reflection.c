@@ -47,6 +47,14 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&initialise_pci)){
 		res = "initialise_pci";
 	}
+	extern void pci_has_capabilities();
+	if(input>=((uint64_t)&pci_has_capabilities)){
+		res = "pci_has_capabilities";
+	}
+	extern void pci_get_capability_pointer();
+	if(input>=((uint64_t)&pci_get_capability_pointer)){
+		res = "pci_get_capability_pointer";
+	}
 	extern void ps2_read_status_register();
 	if(input>=((uint64_t)&ps2_read_status_register)){
 		res = "ps2_read_status_register";
@@ -831,6 +839,10 @@ char* getSymbolnameForAddress(uint64_t input){
 	if(input>=((uint64_t)&apic_get_interrupt_number)){
 		res = "apic_get_interrupt_number";
 	}
+	extern void apic_fire();
+	if(input>=((uint64_t)&apic_fire)){
+		res = "apic_fire";
+	}
 	extern void initialise_apic();
 	if(input>=((uint64_t)&initialise_apic)){
 		res = "initialise_apic";
@@ -1214,6 +1226,26 @@ char* getSymbolnameForAddress(uint64_t input){
 	extern void malloc_whole_page();
 	if(input>=((uint64_t)&malloc_whole_page)){
 		res = "malloc_whole_page";
+	}
+	extern void msi_is_supported();
+	if(input>=((uint64_t)&msi_is_supported)){
+		res = "msi_is_supported";
+	}
+	extern void msi_get_control();
+	if(input>=((uint64_t)&msi_get_control)){
+		res = "msi_get_control";
+	}
+	extern void msi_write_message_address();
+	if(input>=((uint64_t)&msi_write_message_address)){
+		res = "msi_write_message_address";
+	}
+	extern void msi_enable();
+	if(input>=((uint64_t)&msi_enable)){
+		res = "msi_enable";
+	}
+	extern void msi_install();
+	if(input>=((uint64_t)&msi_install)){
+		res = "msi_install";
 	}
 	extern void page_map_indexer();
 	if(input>=((uint64_t)&page_map_indexer)){

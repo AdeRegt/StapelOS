@@ -6,6 +6,7 @@
 #include "../include/interrupts.h"
 #include "../include/timer.h"
 #include "../include/usb.h"
+#include "../include/msi.h"
 
 void *base_xhci_address;
 void* dcbaap_items;
@@ -15,6 +16,7 @@ int command_ring_pointer;
 uint16_t xhci_vendor;
 uint16_t xhci_device;
 
+#if defined(STAPELOS_XHCI_USE_INTERRUPTS)
 void xhci_raw_interrupt_handler(){
 	printk("xhciint %x \n",USBSTS);
 	interrupt_eoi();
@@ -24,6 +26,7 @@ void xhci_raw_interrupt_handler(){
 __attribute__((interrupt)) void interrupt_xhci(interrupt_frame* frame){
 	xhci_raw_interrupt_handler();
 }
+#endif 
 
 void xhci_sleep(){
 	// printk("-> device %x \n",xhci_device);
@@ -1068,8 +1071,10 @@ void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 	// enable busmastering if needed
 	pci_enable_busmastering(bus, slot, func);
 
+	#ifdef STAPELOS_XHCI_USE_INTERRUPTS
 	// get interrupt
 	install_interrupt_from_pci(bus,slot,func,interrupt_xhci);
+	#endif
 
 	// get the base address of xhci
 	base_xhci_address = 0;
@@ -1165,12 +1170,14 @@ void initialise_xhci(uint8_t bus, uint8_t slot, uint8_t func)
 	ERSTBA_L (0) = ((uint32_t)((uint64_t)segmenttable));
 	ERSTBA_H (0) = 0;
 
-	IMOD (0) = 0x00100FA0;
-
-	IMAN (0) = 2;
-
+	#ifdef STAPELOS_XHCI_USE_INTERRUPTS
+	IMAN (0) = 0b11;
+	IMOD (0) = 0;
 	USBCMD = USBCMD | USBCMD_MASK_RS | USBCMD_MASK_INTE;
-
+	msi_install(bus,slot,func,10);
+	#else 
+	USBCMD = USBCMD | USBCMD_MASK_RS;
+	#endif 
 	xhci_sleep();
 
 	xhci_check_ports();
